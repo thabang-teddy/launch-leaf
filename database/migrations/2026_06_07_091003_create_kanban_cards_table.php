@@ -6,14 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('kanban_cards', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('kanban_column_id')->constrained()->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('kanban_column_id')
+                ->constrained('kanban_columns')
+                ->cascadeOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
             $table->date('due_date')->nullable();
@@ -22,9 +21,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('kanban_cards');

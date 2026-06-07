@@ -5,9 +5,8 @@ import { Head, Link, useForm } from '@inertiajs/react';
 export default function VerifyEmail({ status }) {
     const { post, processing } = useForm({});
 
-    const submit = (e) => {
+    const submit = e => {
         e.preventDefault();
-
         post(route('verification.send'));
     };
 
@@ -15,26 +14,33 @@ export default function VerifyEmail({ status }) {
         <GuestLayout>
             <Head title="Email Verification" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                Thanks for signing up! Before getting started, could you verify your email address by clicking on the
-                link we just emailed to you? If you didn't receive the email, we will gladly send you another.
-            </div>
+            <h5 className="fw-800 text-dark-ll mb-2" style={{ fontSize: '1.15rem' }}>
+                Verify Your Email
+            </h5>
+
+            <p className="text-muted-ll small mb-3">
+                Thanks for signing up! Please verify your email address by clicking the link we sent you.
+                Didn't receive it? We'll send another.
+            </p>
 
             {status === 'verification-link-sent' && (
-                <div className="mb-4 font-medium text-sm text-green-600">
-                    A new verification link has been sent to the email address you provided during registration.
+                <div className="mb-3 p-2 rounded small" style={{ background: 'rgba(25,135,84,0.08)', color: '#146c43' }}>
+                    A new verification link has been sent to your email address.
                 </div>
             )}
 
             <form onSubmit={submit}>
-                <div className="mt-4 flex items-center justify-between">
-                    <PrimaryButton disabled={processing}>Resend Verification Email</PrimaryButton>
+                <div className="d-flex align-items-center justify-content-between mt-3">
+                    <PrimaryButton disabled={processing}>
+                        {processing ? 'Sending…' : 'Resend Verification Email'}
+                    </PrimaryButton>
 
                     <Link
                         href={route('logout')}
                         method="post"
                         as="button"
-                        className="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="border-0 bg-transparent small text-decoration-none"
+                        style={{ color: 'var(--ll-muted)', cursor: 'pointer' }}
                     >
                         Log Out
                     </Link>

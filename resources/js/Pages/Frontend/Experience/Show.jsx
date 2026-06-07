@@ -1,24 +1,56 @@
 import FrontendLayout from '@/Layouts/FrontendLayout';
 import { Head, Link } from '@inertiajs/react';
 
-export default function ExperienceShow({ experience }) {
+function fmt(dateStr) {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
+export default function ExperienceShow({ experience: e }) {
+    const isEducation = e.type === 'education';
+
     return (
         <FrontendLayout>
-            <Head title={experience.title} />
+            <Head title={e.title} />
+
             <div className="container py-5" style={{ maxWidth: '800px' }}>
-                <Link href={route('experience.index')} className="text-muted small">&larr; Experience</Link>
-                <h1 className="h2 mt-2 mb-1">{experience.title}</h1>
-                <div className="text-muted mb-1">
-                    {experience.company}{experience.location ? ` · ${experience.location}` : ''}
+                {/* Back */}
+                <Link href={route('experience.index')} className="ll-back-link">
+                    ← Back to Experience
+                </Link>
+
+                {/* Type badge */}
+                <div className="mt-3 mb-2">
+                    <span
+                        className="ll-platform-badge"
+                        style={isEducation
+                            ? { background: 'rgba(13,202,240,0.12)', color: '#0dcaf0' }
+                            : undefined}
+                    >
+                        {isEducation ? '🎓 Education' : '💼 Work'}
+                    </span>
                 </div>
-                <div className="text-muted small mb-3">
-                    {experience.start_date} – {experience.is_current ? 'Present' : experience.end_date}
-                </div>
-                <span className={`badge mb-3 ${experience.type === 'education' ? 'bg-info' : 'bg-primary'}`}>
-                    {experience.type}
+
+                {/* Heading */}
+                <h1 className="ll-title mb-1">{e.title}</h1>
+
+                {/* Meta */}
+                <p className="text-muted-ll mb-1" style={{ fontWeight: 500 }}>
+                    {e.company}
+                    {e.location ? ` · ${e.location}` : ''}
+                </p>
+                <span className="ll-timeline-date">
+                    {fmt(e.start_date)} – {e.is_current ? 'Present' : fmt(e.end_date)}
                 </span>
-                {experience.description && (
-                    <div style={{ whiteSpace: 'pre-wrap' }}>{experience.description}</div>
+
+                {/* Description */}
+                {e.description && (
+                    <div
+                        className="mt-4"
+                        style={{ whiteSpace: 'pre-wrap', lineHeight: 1.85, color: 'var(--ll-text)' }}
+                    >
+                        {e.description}
+                    </div>
                 )}
             </div>
         </FrontendLayout>

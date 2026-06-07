@@ -7,19 +7,12 @@ import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function ConfirmPassword() {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        password: '',
-    });
+    const { data, setData, post, processing, errors, reset } = useForm({ password: '' });
 
-    useEffect(() => {
-        return () => {
-            reset('password');
-        };
-    }, []);
+    useEffect(() => () => reset('password'), []);
 
-    const submit = (e) => {
+    const submit = e => {
         e.preventDefault();
-
         post(route('password.confirm'));
     };
 
@@ -27,30 +20,30 @@ export default function ConfirmPassword() {
         <GuestLayout>
             <Head title="Confirm Password" />
 
-            <div className="mb-4 text-sm text-gray-600">
-                This is a secure area of the application. Please confirm your password before continuing.
-            </div>
+            <h5 className="fw-800 text-dark-ll mb-2" style={{ fontSize: '1.15rem' }}>
+                Confirm Password
+            </h5>
+            <p className="text-muted-ll small mb-4">
+                This is a secure area. Please confirm your password before continuing.
+            </p>
 
             <form onSubmit={submit}>
-                <div className="mt-4">
+                <div className="mb-3">
                     <InputLabel htmlFor="password" value="Password" />
-
                     <TextInput
                         id="password"
                         type="password"
                         name="password"
                         value={data.password}
-                        className="mt-1 block w-full"
-                        isFocused={true}
-                        onChange={(e) => setData('password', e.target.value)}
+                        isFocused
+                        onChange={e => setData('password', e.target.value)}
                     />
-
-                    <InputError message={errors.password} className="mt-2" />
+                    <InputError message={errors.password} />
                 </div>
 
-                <div className="flex items-center justify-end mt-4">
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Confirm
+                <div className="d-flex justify-content-end mt-3">
+                    <PrimaryButton disabled={processing}>
+                        {processing ? 'Confirming…' : 'Confirm'}
                     </PrimaryButton>
                 </div>
             </form>

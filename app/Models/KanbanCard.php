@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class KanbanCard extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected $fillable = [
         'kanban_column_id', 'title', 'description', 'due_date', 'order',

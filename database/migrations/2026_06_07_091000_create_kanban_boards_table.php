@@ -6,25 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('kanban_columns', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->string('color')->nullable();   // Bootstrap color class, e.g. "primary"
+        Schema::create('kanban_boards', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('name');
+            $table->text('description')->nullable();
+            $table->string('color', 20)->default('#2DC9A2');
             $table->unsignedInteger('order')->default(0);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('kanban_columns');
+        Schema::dropIfExists('kanban_boards');
     }
 };

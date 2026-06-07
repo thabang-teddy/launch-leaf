@@ -3,63 +3,90 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Page;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PageController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): Response
     {
-        //
+        return Inertia::render('Dashboard/Pages/Index', [
+            'pages' => Page::latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('Dashboard/Pages/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'title'        => 'required|string|max:255',
+            'content'      => 'nullable|string',
+            'is_published' => 'boolean',
+        ]);
+
+        $validated['slug']         = $this->uniqueSlug($validated['title']);
+        $validated['is_published'] ??= false;
+
+        Page::create($validated);
+
+        return redirect()->route('dashboard.pages.index')->with('success', 'Page created.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Page $page): RedirectResponse
     {
-        //
+        return redirect()->route('dashboard.pages.edit', $page);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Page $page): Response
     {
-        //
+        return Inertia::render('Dashboard/Pages/Edit', ['page' => $page]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Page $page): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'title'        => 'required|string|max:255',
+            'content'      => 'nullable|string',
+            'is_published' => 'boolean',
+        ]);
+
+        $validated['slug'] = $this->uniqueSlug($validated['title'], $page->id);
+
+        $page->update($validated);
+
+        return redirect()->route('dashboard.pages.index')->with('success', 'Page updated.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Page $page): RedirectResponse
     {
-        //
+        $page->delete();
+
+        return redirect()->route('dashboard.pages.index')->with('success', 'Page deleted.');
+    }
+
+    private function uniqueSlug(string $title, ?int $excludeId = null): string
+    {
+        $base = Str::slug($title);
+        $slug = $base;
+        $i    = 1;
+
+        while (
+            Page::where('slug', $slug)
+                ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+                ->exists()
+        ) {
+            $slug = "$base-$i";
+            $i++;
+        }
+
+        return $slug;
     }
 }

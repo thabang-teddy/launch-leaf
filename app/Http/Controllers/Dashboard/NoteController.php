@@ -3,63 +3,64 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Note;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class NoteController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): Response
     {
-        //
+        return Inertia::render('Dashboard/Notes/Index', [
+            'notes' => Note::latest()->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('Dashboard/Notes/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'title'   => 'required|string|max:255',
+            'content' => 'nullable|string',
+        ]);
+
+        Note::create($validated);
+
+        return redirect()->route('dashboard.notes.index')->with('success', 'Note created.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Note $note): RedirectResponse
     {
-        //
+        return redirect()->route('dashboard.notes.edit', $note);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Note $note): Response
     {
-        //
+        return Inertia::render('Dashboard/Notes/Edit', ['note' => $note]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Note $note): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'title'   => 'required|string|max:255',
+            'content' => 'nullable|string',
+        ]);
+
+        $note->update($validated);
+
+        return redirect()->route('dashboard.notes.index')->with('success', 'Note updated.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Note $note): RedirectResponse
     {
-        //
+        $note->delete();
+
+        return redirect()->route('dashboard.notes.index')->with('success', 'Note deleted.');
     }
 }

@@ -1,16 +1,39 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 
-export default function Guest({ children }) {
+export default function GuestLayout({ children }) {
     return (
-        <div className="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <Link href="/">
-                    <ApplicationLogo className="w-20 h-20 fill-current text-gray-500" />
-                </Link>
-            </div>
+        <div
+            className="min-vh-100 d-flex flex-column align-items-center justify-content-center"
+            style={{ background: 'var(--ll-bg-light)' }}
+        >
+            {/* Brand */}
+            <Link
+                href="/"
+                style={{
+                    fontSize: '1.6rem',
+                    fontWeight: 800,
+                    color: 'var(--ll-dark)',
+                    textDecoration: 'none',
+                    letterSpacing: '-0.01em',
+                    marginBottom: '1.5rem',
+                    display: 'block',
+                }}
+            >
+                Launch<span style={{ color: 'var(--ll-accent)' }}>Leaf</span>
+            </Link>
 
-            <div className="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            {/* Card */}
+            <div
+                style={{
+                    width: '100%',
+                    maxWidth: '440px',
+                    background: '#fff',
+                    borderRadius: '16px',
+                    boxShadow: 'var(--ll-shadow)',
+                    padding: '2.25rem 2.5rem',
+                    border: '1px solid var(--ll-border)',
+                }}
+            >
                 {children}
             </div>
         </div>

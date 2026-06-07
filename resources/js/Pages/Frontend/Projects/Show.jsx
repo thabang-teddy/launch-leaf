@@ -5,34 +5,76 @@ export default function ProjectShow({ project }) {
     return (
         <FrontendLayout>
             <Head title={project.title} />
-            <div className="container py-5">
-                <Link href={route('projects.index')} className="text-muted small">&larr; Projects</Link>
-                <h1 className="h2 mt-2 mb-1">{project.title}</h1>
-                {project.github_url && (
-                    <a href={project.github_url} target="_blank" rel="noreferrer" className="text-muted small">
-                        {project.github_url}
-                    </a>
-                )}
 
-                {project.description && <p className="mt-3">{project.description}</p>}
+            <div className="container py-5" style={{ maxWidth: '900px' }}>
+                {/* Back */}
+                <Link href={route('projects.index')} className="ll-back-link">
+                    ← Back to Projects
+                </Link>
 
-                {project.readme_content && (
-                    <div className="mt-4">
-                        <h5>README</h5>
-                        <pre className="bg-light p-3 rounded" style={{ whiteSpace: 'pre-wrap', fontSize: '0.85rem' }}>
-                            {project.readme_content}
-                        </pre>
-                    </div>
-                )}
+                {/* Header */}
+                <div className="mt-3 mb-4">
+                    <h1 className="ll-title mb-2">{project.title}</h1>
+                    {project.github_url && (
+                        <a
+                            href={project.github_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-accent"
+                            style={{ fontSize: '0.875rem', textDecoration: 'none', fontWeight: 600 }}
+                        >
+                            🔗 {project.github_url}
+                        </a>
+                    )}
+                    {project.description && (
+                        <p className="text-muted-ll mt-2 mb-0" style={{ lineHeight: 1.75 }}>
+                            {project.description}
+                        </p>
+                    )}
+                </div>
 
-                {project.file_tree?.length > 0 && (
-                    <div className="mt-4">
-                        <h5>Files</h5>
-                        <ul className="list-unstyled font-monospace small">
-                            {project.file_tree.map(f => <li key={f}>{f}</li>)}
-                        </ul>
-                    </div>
-                )}
+                <div className="row g-4">
+                    {/* README */}
+                    {project.readme_content && (
+                        <div className="col-12">
+                            <h5 className="fw-800 text-dark-ll mb-2">
+                                <span className="text-accent me-2">📄</span>README
+                            </h5>
+                            <div className="ll-readme">{project.readme_content}</div>
+                        </div>
+                    )}
+
+                    {/* File tree */}
+                    {project.file_tree?.length > 0 && (
+                        <div className="col-12">
+                            <h5 className="fw-800 text-dark-ll mb-2">
+                                <span className="text-accent me-2">📁</span>
+                                File Tree
+                                <span
+                                    className="text-muted-ll fw-400 ms-2"
+                                    style={{ fontSize: '0.8rem' }}
+                                >
+                                    ({project.file_tree.length} files)
+                                </span>
+                            </h5>
+                            <div className="ll-file-tree">
+                                {project.file_tree.map(f => (
+                                    <div key={f}>{f}</div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* No content state */}
+                    {!project.readme_content && !project.file_tree?.length && (
+                        <div className="col-12 text-center py-4">
+                            <p className="text-muted-ll small">
+                                No synced content yet.{' '}
+                                <span className="text-accent">Sync from the dashboard to populate README &amp; file tree.</span>
+                            </p>
+                        </div>
+                    )}
+                </div>
             </div>
         </FrontendLayout>
     );

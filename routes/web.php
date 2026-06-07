@@ -26,6 +26,9 @@ use App\Http\Controllers\Dashboard\PersonalInfoController  as DashPersonalInfoCo
 use App\Http\Controllers\Dashboard\TipController           as DashTipController;
 use App\Http\Controllers\Dashboard\ContactController       as DashContactController;
 use App\Http\Controllers\Dashboard\GitHubSyncController;
+use App\Http\Controllers\Dashboard\KanbanBoardController;
+use App\Http\Controllers\Dashboard\KanbanProjectController;
+use App\Http\Controllers\Dashboard\HomeController as DashHomeController;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public frontend routes
@@ -59,7 +62,7 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 
 Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')->group(function () {
 
-    Route::get('/', fn () => inertia('Dashboard/Home'))->name('home');
+    Route::get('/', [DashHomeController::class, 'index'])->name('home');
 
     // GitHub Projects — CRUD + sync
     Route::resource('projects',   DashProjectController::class);
@@ -78,26 +81,65 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::resource('pages',      PageController::class);
     Route::resource('notes',      NoteController::class);
 
-    // Kanban
-    Route::resource('kanban/columns', KanbanColumnController::class)->names([
-        'index'   => 'kanban.columns.index',
-        'create'  => 'kanban.columns.create',
-        'store'   => 'kanban.columns.store',
-        'show'    => 'kanban.columns.show',
-        'edit'    => 'kanban.columns.edit',
-        'update'  => 'kanban.columns.update',
-        'destroy' => 'kanban.columns.destroy',
-    ]);
-    Route::resource('kanban/cards', KanbanCardController::class)->names([
-        'index'   => 'kanban.cards.index',
-        'create'  => 'kanban.cards.create',
-        'store'   => 'kanban.cards.store',
-        'show'    => 'kanban.cards.show',
-        'edit'    => 'kanban.cards.edit',
-        'update'  => 'kanban.cards.update',
-        'destroy' => 'kanban.cards.destroy',
-    ]);
-    Route::get('kanban', fn () => inertia('Dashboard/Kanban/Index'))->name('kanban.index');
+    // Kanban — boards list is the entry point
+    Route::get('kanban', [KanbanBoardController::class, 'index'])->name('kanban.index');
+
+    // Kanban boards CRUD  (delete cascades → projects → columns → cards via DB)
+    Route::resource('kanban/boards', KanbanBoardController::class)
+        ->parameters(['boards' => 'kanbanBoard'])
+        ->only(['create', 'store', 'show', 'edit', 'update', 'destroy'])
+        ->names([
+            'create'  => 'kanban.boards.create',
+            'store'   => 'kanban.boards.store',
+            'show'    => 'kanban.boards.show',
+            'edit'    => 'kanban.boards.edit',
+            'update'  => 'kanban.boards.update',
+            'destroy' => 'kanban.boards.destroy',
+        ]);
+
+    // Kanban projects CRUD  (delete cascades → columns → cards via DB)
+    Route::resource('kanban/projects', KanbanProjectController::class)
+        ->parameters(['projects' => 'kanbanProject'])
+        ->only(['create', 'store', 'show', 'edit', 'update', 'destroy'])
+        ->names([
+            'create'  => 'kanban.projects.create',
+            'store'   => 'kanban.projects.store',
+            'show'    => 'kanban.projects.show',
+            'edit'    => 'kanban.projects.edit',
+            'update'  => 'kanban.projects.update',
+            'destroy' => 'kanban.projects.destroy',
+        ]);
+
+    // Batch reorder endpoints (must be defined before the resource wildcards)
+    Route::post('kanban/columns/reorder', [KanbanColumnController::class, 'reorder'])->name('kanban.columns.reorder');
+    Route::post('kanban/cards/reorder',   [KanbanCardController::class,  'reorder'])->name('kanban.cards.reorder');
+
+    // Kanban columns — scoped to a project via kanban_project_id in the form
+    // parameters() aligns route wildcard with controller parameter name for model binding
+    Route::resource('kanban/columns', KanbanColumnController::class)
+        ->parameters(['columns' => 'kanbanColumn'])
+        ->names([
+            'index'   => 'kanban.columns.index',
+            'create'  => 'kanban.columns.create',
+            'store'   => 'kanban.columns.store',
+            'show'    => 'kanban.columns.show',
+            'edit'    => 'kanban.columns.edit',
+            'update'  => 'kanban.columns.update',
+            'destroy' => 'kanban.columns.destroy',
+        ]);
+
+    // Kanban cards
+    Route::resource('kanban/cards', KanbanCardController::class)
+        ->parameters(['cards' => 'kanbanCard'])
+        ->names([
+            'index'   => 'kanban.cards.index',
+            'create'  => 'kanban.cards.create',
+            'store'   => 'kanban.cards.store',
+            'show'    => 'kanban.cards.show',
+            'edit'    => 'kanban.cards.edit',
+            'update'  => 'kanban.cards.update',
+            'destroy' => 'kanban.cards.destroy',
+        ]);
 
     // Tasks
     Route::resource('tasks', TaskController::class);
@@ -119,10 +161,5 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 });
-
-// Redirect root /dashboard to named route
-Route::get('/dashboard', fn () => redirect()->route('dashboard.home'))
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
 
 require __DIR__ . '/auth.php';

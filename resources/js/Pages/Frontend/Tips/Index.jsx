@@ -5,31 +5,83 @@ export default function TipsIndex({ tips }) {
     return (
         <FrontendLayout>
             <Head title="Tips" />
-            <div className="container py-5" style={{ maxWidth: '800px' }}>
-                <h1 className="h2 mb-4">Tips</h1>
-                {tips.length === 0 ? (
-                    <p className="text-muted">No tips yet.</p>
-                ) : (
-                    <div className="d-flex flex-column gap-3">
-                        {tips.map(tip => (
-                            <div key={tip.id} className="card">
-                                <div className="card-body">
-                                    <h5 className="card-title mb-1">
-                                        <Link href={route('tips.show', tip.slug)}>{tip.title}</Link>
-                                    </h5>
-                                    {tip.tags?.length > 0 && (
-                                        <div className="d-flex flex-wrap gap-1 mt-2">
-                                            {tip.tags.map(t => (
-                                                <span key={t} className="badge bg-light text-dark border">{t}</span>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
+
+            {/* Header band */}
+            <div className="ll-section-alt text-center" style={{ padding: '3rem 0' }}>
+                <div className="container">
+                    <span className="ll-label">Knowledge Base</span>
+                    <h1 className="ll-title mt-1">Tips &amp; Tricks</h1>
+                </div>
             </div>
+
+            <section className="ll-section">
+                <div className="container">
+                    {tips.length === 0 ? (
+                        <div className="text-center py-5">
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✍️</div>
+                            <p className="text-muted-ll">No tips published yet.</p>
+                        </div>
+                    ) : (
+                        <div className="row g-4">
+                            {tips.map(tip => (
+                                <div key={tip.id} className="col-md-6 col-lg-4">
+                                    <div className="ll-blog-card">
+                                        {/* Coloured header strip */}
+                                        <div className="ll-blog-header">
+                                            <span className="ll-blog-cat">
+                                                {tip.tags?.[0] ?? 'Tip'}
+                                            </span>
+                                            <Link
+                                                href={route('tips.show', tip.slug)}
+                                                className="ll-blog-title"
+                                            >
+                                                {tip.title}
+                                            </Link>
+                                        </div>
+
+                                        <div className="ll-blog-body">
+                                            {/* Problem preview */}
+                                            {tip.problem && (
+                                                <p
+                                                    className="text-muted-ll small mb-3"
+                                                    style={{ lineHeight: 1.65 }}
+                                                >
+                                                    {tip.problem.length > 120
+                                                        ? tip.problem.substring(0, 120) + '…'
+                                                        : tip.problem}
+                                                </p>
+                                            )}
+
+                                            {/* Tags */}
+                                            {tip.tags?.length > 0 && (
+                                                <div className="d-flex flex-wrap gap-1 mb-3">
+                                                    {tip.tags.map(t => (
+                                                        <span key={t} className="ll-tech-chip">{t}</span>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Read more */}
+                                            <Link
+                                                href={route('tips.show', tip.slug)}
+                                                className="mt-auto"
+                                                style={{
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: 700,
+                                                    color: 'var(--ll-accent)',
+                                                    textDecoration: 'none',
+                                                }}
+                                            >
+                                                Read more →
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </section>
         </FrontendLayout>
     );
 }

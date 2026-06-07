@@ -1,0 +1,78 @@
+import DashboardLayout from '@/Layouts/DashboardLayout';
+import { Head, Link, useForm } from '@inertiajs/react';
+
+export default function PortfolioCreate() {
+    const { data, setData, post, processing, errors } = useForm({
+        title: '', description: '', content: '', image_path: '',
+        tech_stack: '', live_url: '', repo_url: '', order: 0, is_active: true,
+    });
+
+    const submit = (e) => {
+        e.preventDefault();
+        post(route('dashboard.portfolio.store'));
+    };
+
+    return (
+        <DashboardLayout header="New Portfolio Item">
+            <Head title="New Portfolio Item" />
+            <div style={{ maxWidth: '720px' }}>
+                <form onSubmit={submit}>
+                    <div className="card border-0 shadow-sm mb-3">
+                        <div className="card-header bg-white fw-semibold">Details</div>
+                        <div className="card-body d-flex flex-column gap-3">
+                            <div>
+                                <label className="form-label fw-semibold small">Title *</label>
+                                <input className={`form-control ${errors.title ? 'is-invalid' : ''}`} value={data.title} onChange={e => setData('title', e.target.value)} />
+                                {errors.title && <div className="invalid-feedback">{errors.title}</div>}
+                            </div>
+                            <div>
+                                <label className="form-label fw-semibold small">Short Description</label>
+                                <textarea className="form-control" rows={2} value={data.description} onChange={e => setData('description', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="form-label fw-semibold small">Full Content</label>
+                                <textarea className="form-control" rows={6} value={data.content} onChange={e => setData('content', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="form-label fw-semibold small">Tech Stack <span className="text-muted fw-normal">(comma separated)</span></label>
+                                <input className="form-control" placeholder="React, Laravel, Tailwind" value={data.tech_stack} onChange={e => setData('tech_stack', e.target.value)} />
+                            </div>
+                            <div className="row g-3">
+                                <div className="col-sm-6">
+                                    <label className="form-label fw-semibold small">Live URL</label>
+                                    <input type="url" className={`form-control ${errors.live_url ? 'is-invalid' : ''}`} value={data.live_url} onChange={e => setData('live_url', e.target.value)} />
+                                    {errors.live_url && <div className="invalid-feedback">{errors.live_url}</div>}
+                                </div>
+                                <div className="col-sm-6">
+                                    <label className="form-label fw-semibold small">Repo URL</label>
+                                    <input type="url" className={`form-control ${errors.repo_url ? 'is-invalid' : ''}`} value={data.repo_url} onChange={e => setData('repo_url', e.target.value)} />
+                                    {errors.repo_url && <div className="invalid-feedback">{errors.repo_url}</div>}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="form-label fw-semibold small">Image Path</label>
+                                <input className="form-control" placeholder="portfolio/image.jpg" value={data.image_path} onChange={e => setData('image_path', e.target.value)} />
+                            </div>
+                            <div className="row g-3">
+                                <div className="col-sm-6">
+                                    <label className="form-label fw-semibold small">Order</label>
+                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 0)} />
+                                </div>
+                                <div className="col-sm-6 d-flex align-items-end">
+                                    <div className="form-check">
+                                        <input type="checkbox" className="form-check-input" id="is_active" checked={data.is_active} onChange={e => setData('is_active', e.target.checked)} />
+                                        <label className="form-check-label fw-semibold small" htmlFor="is_active">Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="card-footer bg-transparent d-flex gap-2">
+                            <button type="submit" className="btn btn-primary" disabled={processing}>{processing ? 'Saving…' : 'Create Item'}</button>
+                            <Link href={route('dashboard.portfolio.index')} className="btn btn-outline-secondary">Cancel</Link>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </DashboardLayout>
+    );
+}

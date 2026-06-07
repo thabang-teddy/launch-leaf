@@ -3,63 +3,113 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Portfolio;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PortfolioController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): Response
     {
-        //
+        return Inertia::render('Dashboard/Portfolio/Index', [
+            'items' => Portfolio::orderBy('order')->get(),
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(): Response
     {
-        //
+        return Inertia::render('Dashboard/Portfolio/Create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'content'     => 'nullable|string',
+            'image_path'  => 'nullable|string|max:255',
+            'tech_stack'  => 'nullable|string',
+            'live_url'    => 'nullable|url|max:255',
+            'repo_url'    => 'nullable|url|max:255',
+            'order'       => 'nullable|integer|min:0',
+            'is_active'   => 'boolean',
+        ]);
+
+        $validated['slug']       = $this->uniqueSlug($validated['title']);
+        $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
+        $validated['order']      ??= 0;
+        $validated['is_active']  ??= true;
+
+        Portfolio::create($validated);
+
+        return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item created.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Portfolio $portfolio): RedirectResponse
     {
-        //
+        return redirect()->route('dashboard.portfolio.edit', $portfolio);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
+    public function edit(Portfolio $portfolio): Response
     {
-        //
+        $item               = $portfolio->toArray();
+        $item['tech_stack'] = implode(', ', $portfolio->tech_stack ?? []);
+
+        return Inertia::render('Dashboard/Portfolio/Edit', ['item' => $item]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Portfolio $portfolio): RedirectResponse
     {
-        //
+        $validated = $request->validate([
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'content'     => 'nullable|string',
+            'image_path'  => 'nullable|string|max:255',
+            'tech_stack'  => 'nullable|string',
+            'live_url'    => 'nullable|url|max:255',
+            'repo_url'    => 'nullable|url|max:255',
+            'order'       => 'nullable|integer|min:0',
+            'is_active'   => 'boolean',
+        ]);
+
+        $validated['slug']       = $this->uniqueSlug($validated['title'], $portfolio->id);
+        $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
+
+        $portfolio->update($validated);
+
+        return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item updated.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Portfolio $portfolio): RedirectResponse
     {
-        //
+        $portfolio->delete();
+
+        return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item deleted.');
+    }
+
+    private function uniqueSlug(string $title, ?int $excludeId = null): string
+    {
+        $base = Str::slug($title);
+        $slug = $base;
+        $i    = 1;
+
+        while (
+            Portfolio::where('slug', $slug)
+                ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+                ->exists()
+        ) {
+            $slug = "$base-$i";
+            $i++;
+        }
+
+        return $slug;
+    }
+
+    private function parseCsv(string $raw): array
+    {
+        return array_values(array_filter(array_map('trim', explode(',', $raw))));
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Contact;
+use App\Models\PersonalInfo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,7 +14,9 @@ class ContactController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Frontend/Contact/Index');
+        return Inertia::render('Frontend/Contact/Index', [
+            'personalInfo' => PersonalInfo::first(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse
