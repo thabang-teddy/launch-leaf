@@ -1,0 +1,48 @@
+Please create a CLAUDE.md file for this app
+
+name : LaunchLeaf
+
+frontend
+- home
+- GitHub project with personal git chart (Listings, Details)
+- Other accounts Info with git chart (Listings, Details)
+- Portfolio (Listings, Details)
+- experience (Listings, Details) 
+- Personal info (CV page)
+- Tips (Listings, Details)
+- contact
+
+dashboard 
+- pages CRUD (create page)
+- Make note
+- Kanban board for my project
+- Tasks check list (this are things do when )
+- GitHub project with personal git chart CRUD (git link, on the frontend detail page show read me and file)
+- Other accounts Info with git chart CRUD (git link, on the frontend detail page show read me and file)
+- Portfolio CRUD
+- experience CRUD 
+- Personal info 
+- Tips CRUD (write about what I'm facing and how I'm fixing it)
+- Contact messages n reply
+
+
+use laravel 10 with react in the frontend
+use SQlite
+
+Use Laravel (api), bootstrap (css), react.js (frontend)
+
+Following these principles:
+
+1. Keep it under 500 lines total - focus only on universally applicable information
+2. Cover the essentials: WHAT (tech stack, project structure), WHY (purpose), and HOW (build/test commands)
+3. Use Progressive Disclosure: instead of including all instructions, create a brief index pointing to other markdown files in .claude/docs/ for specialized topics
+4. Include file:line references instead of code snippets
+5. Assume I'll use linters for code style - don't include formatting guidelines
+
+Structure it as: project overview, tech stack, key directories/their purposes, essential build/test commands, and a list of additional documentation files Claude should check when relevant.
+
+Additionally, extract patterns you observe into separate files:
+- .claude/docs/architectural_patterns.md - document the architectural patterns, design decisions, and conventions used (e.g., dependency injection, state management, API design patterns). Make sure these are patterns that appear in multiple files.
+
+Ask me questions to clarify the product requirements, technical requirements, engineering principles, and hard constraints.
+

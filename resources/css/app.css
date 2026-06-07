@@ -1,0 +1,7 @@
+/* Bootstrap 5 — imported first so custom styles can override */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* ============================================================
+   Custom styles
+   Keep overrides below this line so specificity stays clean.
+   ============================================================ */
