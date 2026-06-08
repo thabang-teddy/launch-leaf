@@ -11,7 +11,7 @@ class PersonalInfoController extends Controller
 {
     public function index(): Response
     {
-        return Inertia::render('Frontend/CV/Index', [
+        return Inertia::render('Frontend/About/Index', [
             'info' => PersonalInfo::first(),
         ]);
     }

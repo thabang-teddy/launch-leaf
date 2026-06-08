@@ -48,7 +48,7 @@ Route::get('/portfolio/{slug}', [PortfolioController::class, 'show'])->name('por
 Route::get('/experience',        [ExperienceController::class, 'index'])->name('experience.index');
 Route::get('/experience/{slug}', [ExperienceController::class, 'show'])->name('experience.show');
 
-Route::get('/cv', [PersonalInfoController::class, 'index'])->name('cv');
+Route::get('/about', [PersonalInfoController::class, 'index'])->name('about');
 
 Route::get('/tips',        [TipController::class, 'index'])->name('tips.index');
 Route::get('/tips/{slug}', [TipController::class, 'show'])->name('tips.show');

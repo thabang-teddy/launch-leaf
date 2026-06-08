@@ -6,7 +6,7 @@ const NAV_LINKS = [
     { label: 'Portfolio',  href: () => route('portfolio.index'),  active: 'portfolio.*' },
     { label: 'Projects',   href: () => route('projects.index'),   active: 'projects.*'  },
     { label: 'Experience', href: () => route('experience.index'), active: 'experience.*'},
-    { label: 'CV',         href: () => route('cv') },
+    { label: 'About',      href: () => route('about') },
     { label: 'Tips',       href: () => route('tips.index'),       active: 'tips.*'      },
 ];
 
