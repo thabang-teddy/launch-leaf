@@ -201,15 +201,9 @@ export default function Board({ project, columns }) {
             {/* Breadcrumb + actions */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {project.board ? (
-                        <Link href={route('dashboard.kanban.boards.show', project.board.id)} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
-                            ← {project.board.name}
-                        </Link>
-                    ) : (
-                        <Link href={route('dashboard.kanban.index')} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
-                            ← All Boards
-                        </Link>
-                    )}
+                    <Link href={route('dashboard.kanban.index')} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
+                        ← All Projects
+                    </Link>
                     <span style={{ color: C.border }}>|</span>
                     <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: project.color || C.green, flexShrink: 0 }} />
                     <span style={{ fontWeight: 600, color: C.text, fontSize: '0.95rem' }}>{project.name}</span>

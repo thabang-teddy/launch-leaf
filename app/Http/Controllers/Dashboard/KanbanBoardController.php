@@ -14,7 +14,7 @@ class KanbanBoardController extends Controller
     public function index(): Response
     {
         return Inertia::render('Dashboard/Kanban/Index', [
-            'boards' => KanbanBoard::withCount('projects')
+            'projects' => \App\Models\KanbanProject::withCount(['columns', 'cards'])
                 ->orderBy('order')
                 ->get(),
         ]);

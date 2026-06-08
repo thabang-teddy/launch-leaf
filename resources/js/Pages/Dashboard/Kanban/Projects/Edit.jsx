@@ -11,7 +11,7 @@ const PALETTE = [
     '#EF4444', '#10B981', '#F97316', '#6B7280',
 ];
 
-export default function ProjectEdit({ project, board }) {
+export default function ProjectEdit({ project }) {
     const { data, setData, put, processing, errors } = useForm({
         name: project.name ?? '',
         description: project.description ?? '',
@@ -30,14 +30,10 @@ export default function ProjectEdit({ project, board }) {
             <div style={{ maxWidth: '520px' }}>
                 {/* Breadcrumb */}
                 <div style={{ marginBottom: '1.25rem', display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    {board && (
-                        <>
-                            <Link href={route('dashboard.kanban.boards.show', board.id)} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
-                                ← {board.name}
-                            </Link>
-                            <span style={{ color: C.border }}>|</span>
-                        </>
-                    )}
+                    <Link href={route('dashboard.kanban.index')} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
+                        ← All Projects
+                    </Link>
+                    <span style={{ color: C.border }}>|</span>
                     <Link href={route('dashboard.kanban.projects.show', project.id)} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
                         {project.name}
                     </Link>
@@ -102,9 +98,7 @@ export default function ProjectEdit({ project, board }) {
                                 {processing ? 'Saving…' : 'Save Changes'}
                             </button>
                             <Link
-                                href={board
-                                    ? route('dashboard.kanban.boards.show', board.id)
-                                    : route('dashboard.kanban.projects.show', project.id)}
+                                href={route('dashboard.kanban.projects.show', project.id)}
                                 style={{
                                     background: 'transparent', color: C.muted, border: `1px solid ${C.border}`,
                                     borderRadius: '8px', padding: '9px 20px', fontWeight: 600,

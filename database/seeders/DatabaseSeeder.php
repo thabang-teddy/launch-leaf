@@ -14,11 +14,19 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // ── Personal info (single record, id = 1) ─────────────────────────────
+        // Avatar file must be placed at: storage/app/public/avatars/teddy.jpg
         PersonalInfo::firstOrCreate(
             ['id' => 1],
             [
-                'name'     => 'Teddy',
-                'headline' => 'Full-Stack Developer',
+                'name'        => 'Thabang Teddy Moreasetla',
+                'headline'    => 'Web Developer',
+                'bio'         => 'A South African based web developer that mainly works with C# and JavaScript. '
+                    . 'The libraries I work in are React, Svelte and I have three years of work experience '
+                    . 'working in ASP.Net core building PIMs (Product Information Management), Admins, and ecommerce websites.',
+                'email'       => 'teddymorwasetla@gmail.com',
+                'phone'       => '0786054005',
+                'location'    => 'South Africa',
+                'avatar_path' => 'avatars/teddy.jpg',
             ]
         );
 

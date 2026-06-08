@@ -1,8 +1,10 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, useForm } from '@inertiajs/react';
+import { useRef, useState } from 'react';
 
 export default function PersonalInfoEdit({ info }) {
-    const { data, setData, put, processing, errors, recentlySuccessful } = useForm({
+    const { data, setData, post, processing, errors, recentlySuccessful } = useForm({
+        _method:      'PUT',
         name:         info.name         ?? '',
         headline:     info.headline     ?? '',
         bio:          info.bio          ?? '',
@@ -10,16 +12,30 @@ export default function PersonalInfoEdit({ info }) {
         phone:        info.phone        ?? '',
         location:     info.location     ?? '',
         website_url:  info.website_url  ?? '',
-        avatar_path:  info.avatar_path  ?? '',
+        avatar:       null,
         linkedin_url: info.linkedin_url ?? '',
         github_url:   info.github_url   ?? '',
         twitter_url:  info.twitter_url  ?? '',
         resume_url:   info.resume_url   ?? '',
     });
 
+    const fileInputRef = useRef(null);
+    const [preview, setPreview] = useState(
+        info.avatar_path ? `/storage/${info.avatar_path}` : null
+    );
+
+    const handleAvatarChange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setData('avatar', file);
+        setPreview(URL.createObjectURL(file));
+    };
+
     const submit = (e) => {
         e.preventDefault();
-        put(route('dashboard.personal-info.update'));
+        post(route('dashboard.personal-info.update'), {
+            forceFormData: true,
+        });
     };
 
     const field = (label, key, type = 'text', hint = null) => (
@@ -58,10 +74,79 @@ export default function PersonalInfoEdit({ info }) {
                     <div className="card border-0 shadow-sm mb-4">
                         <div className="card-header bg-white fw-semibold">Basic Info</div>
                         <div className="card-body">
+                            {/* Avatar upload */}
+                            <div className="mb-4">
+                                <label className="form-label fw-semibold small">Profile Photo</label>
+                                <div className="d-flex align-items-center gap-3">
+                                    {/* Preview circle */}
+                                    <div
+                                        style={{
+                                            width: '88px',
+                                            height: '88px',
+                                            borderRadius: '50%',
+                                            overflow: 'hidden',
+                                            border: '2px solid #dee2e6',
+                                            flexShrink: 0,
+                                            background: '#f8f9fa',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '2rem',
+                                        }}
+                                    >
+                                        {preview ? (
+                                            <img
+                                                src={preview}
+                                                alt="Avatar preview"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            />
+                                        ) : (
+                                            '👤'
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            {preview ? 'Change Photo' : 'Upload Photo'}
+                                        </button>
+                                        {preview && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-link btn-sm text-danger ms-2"
+                                                onClick={() => {
+                                                    setPreview(null);
+                                                    setData('avatar', null);
+                                                    if (fileInputRef.current) fileInputRef.current.value = '';
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                        <div className="form-text text-muted mt-1">
+                                            JPG, PNG or WebP · max 2 MB
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp"
+                                    className="d-none"
+                                    onChange={handleAvatarChange}
+                                />
+                                {errors.avatar && (
+                                    <div className="text-danger small mt-1">{errors.avatar}</div>
+                                )}
+                            </div>
+
                             {field('Full Name *', 'name')}
                             {field('Headline', 'headline', 'text', 'e.g. "Full-stack developer"')}
                             {field('Bio', 'bio', 'textarea')}
-                            {field('Avatar Path', 'avatar_path', 'text', 'Relative path in storage, e.g. avatars/me.jpg')}
                             {field('Location', 'location')}
                         </div>
                     </div>

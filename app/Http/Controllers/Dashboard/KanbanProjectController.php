@@ -18,29 +18,30 @@ class KanbanProjectController extends Controller
 
     public function create(Request $request): Response
     {
-        return Inertia::render('Dashboard/Kanban/Projects/Create', [
-            'board_id' => $request->query('board_id'),
-        ]);
+        return Inertia::render('Dashboard/Kanban/Projects/Create');
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'kanban_board_id' => 'required|exists:kanban_boards,id',
-            'name'            => 'required|string|max:255',
-            'description'     => 'nullable|string',
-            'color'           => 'nullable|string|max:20',
+            'name'        => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'color'       => 'nullable|string|max:20',
         ]);
 
-        $validated['order'] = (
-            KanbanProject::where('kanban_board_id', $validated['kanban_board_id'])->max('order') ?? -1
-        ) + 1;
+        $board = \App\Models\KanbanBoard::firstOrCreate(
+            ['name' => 'Default'],
+            ['color' => '#2DC9A2', 'order' => 0],
+        );
+
+        $validated['kanban_board_id'] = $board->id;
+        $validated['order'] = (KanbanProject::where('kanban_board_id', $board->id)->max('order') ?? -1) + 1;
         $validated['color'] ??= '#2DC9A2';
 
         KanbanProject::create($validated);
 
         return redirect()
-            ->route('dashboard.kanban.boards.show', $validated['kanban_board_id'])
+            ->route('dashboard.kanban.index')
             ->with('success', 'Project created.');
     }
 
@@ -79,12 +80,11 @@ class KanbanProjectController extends Controller
 
     public function destroy(KanbanProject $kanbanProject): RedirectResponse
     {
-        $boardId = $kanbanProject->kanban_board_id;
         // DB cascades: project → columns → cards
         $kanbanProject->delete();
 
         return redirect()
-            ->route('dashboard.kanban.boards.show', $boardId)
+            ->route('dashboard.kanban.index')
             ->with('success', 'Project and all its columns and cards deleted.');
     }
 }

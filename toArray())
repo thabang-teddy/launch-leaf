@@ -17,6 +17,6 @@
       Psy\Exception\ParseErrorException::fromParseError(Object(PhpParser\Error))
 
   2   vendor\psy\psysh\src\CodeCleaner.php:273
-      Psy\CodeCleaner::parse("<?php print_r(App\Models\User::select('id','name','email','email_verified_at')-;
+      Psy\CodeCleaner::parse("<?php var_dump(App\Models\PersonalInfo::first()-;
 ")
 

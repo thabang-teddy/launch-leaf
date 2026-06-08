@@ -11,9 +11,8 @@ const PALETTE = [
     '#EF4444', '#10B981', '#F97316', '#6B7280',
 ];
 
-export default function ProjectCreate({ board_id }) {
+export default function ProjectCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        kanban_board_id: board_id ?? '',
         name: '',
         description: '',
         color: '#2DC9A2',
@@ -24,9 +23,7 @@ export default function ProjectCreate({ board_id }) {
         post(route('dashboard.kanban.projects.store'));
     };
 
-    const cancelHref = board_id
-        ? route('dashboard.kanban.boards.show', board_id)
-        : route('dashboard.kanban.index');
+    const cancelHref = route('dashboard.kanban.index');
 
     return (
         <DashboardLayout header="New Project">
@@ -36,7 +33,7 @@ export default function ProjectCreate({ board_id }) {
                 {/* Breadcrumb */}
                 <div style={{ marginBottom: '1.25rem' }}>
                     <Link href={cancelHref} style={{ color: C.muted, fontSize: '0.85rem', textDecoration: 'none' }}>
-                        ← {board_id ? 'Back to Board' : 'All Boards'}
+                        ← All Projects
                     </Link>
                 </div>
 
