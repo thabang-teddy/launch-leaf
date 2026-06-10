@@ -15,7 +15,12 @@ class GitHubSyncController extends Controller
     public function syncProject(GitHubProject $project): RedirectResponse
     {
         try {
-            $project->update($this->github->syncRepo($project->github_url));
+            $data = $this->github->syncRepo($project->github_url);
+            $project->update($data);
+
+            if ($data['readme_content'] === null && empty($data['file_tree'])) {
+                return back()->with('error', 'Sync completed but no content was returned. The repository may be empty, private, or the GITHUB_TOKEN may be missing or invalid.');
+            }
 
             return back()->with('success', 'Project synced successfully.');
         } catch (\Throwable $e) {
@@ -26,7 +31,12 @@ class GitHubSyncController extends Controller
     public function syncAccount(OtherAccount $account): RedirectResponse
     {
         try {
-            $account->update($this->github->syncRepo($account->github_url));
+            $data = $this->github->syncRepo($account->github_url);
+            $account->update($data);
+
+            if ($data['readme_content'] === null && empty($data['file_tree'])) {
+                return back()->with('error', 'Sync completed but no content was returned. The repository may be empty, private, or the GITHUB_TOKEN may be missing or invalid.');
+            }
 
             return back()->with('success', 'Account synced successfully.');
         } catch (\Throwable $e) {

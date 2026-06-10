@@ -45,7 +45,16 @@ class GitHubService
         $response = $this->get("/repos/{$owner}/{$repo}/readme");
 
         if ($response->failed()) {
-            Log::warning("GitHubService: README not found for {$owner}/{$repo}");
+            Log::warning("GitHubService: README not found for {$owner}/{$repo}", [
+                'status' => $response->status(),
+            ]);
+
+            if ($response->status() === 401 || $response->status() === 403) {
+                throw new \RuntimeException(
+                    "GitHub API auth failed (HTTP {$response->status()}). Check that GITHUB_TOKEN is set correctly."
+                );
+            }
+
             return null;
         }
 
@@ -59,7 +68,16 @@ class GitHubService
         $response = $this->get("/repos/{$owner}/{$repo}/git/trees/HEAD", ['recursive' => 1]);
 
         if ($response->failed()) {
-            Log::warning("GitHubService: file tree not found for {$owner}/{$repo}");
+            Log::warning("GitHubService: file tree not found for {$owner}/{$repo}", [
+                'status' => $response->status(),
+            ]);
+
+            if ($response->status() === 401 || $response->status() === 403) {
+                throw new \RuntimeException(
+                    "GitHub API auth failed (HTTP {$response->status()}). Check that GITHUB_TOKEN is set correctly."
+                );
+            }
+
             return [];
         }
 
