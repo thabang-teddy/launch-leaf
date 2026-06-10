@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Experience;
 use App\Models\PersonalInfo;
 use App\Models\Portfolio;
+use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -110,6 +112,92 @@ class DatabaseSeeder extends Seeder
             Portfolio::firstOrCreate(
                 ['slug' => $slug],
                 array_merge($data, ['slug' => $slug])
+            );
+        }
+
+        // ── Work experience ────────────────────────────────────────────────────
+        // Ported from ASP.NET ExperienceSeed — responsibilities folded into
+        // the description as a second HTML section (no separate table in this schema).
+        // Note: the original seed also had a Link field (https://www.jhnet.co.za)
+        // which has no column here; add a 'link' column if needed later.
+        $experiences = [
+            [
+                'title'       => 'ASP.NET Web Developer',
+                'company'     => 'JHnet',
+                'location'    => 'South Africa',
+                'start_date'  => '2021-03-01',
+                'end_date'    => null,
+                'is_current'  => true,
+                'type'        => 'work',
+                'order'       => 1,
+                'description' =>
+                    '<ul class="mt-3">'
+                    . '<li>Developed and maintained web applications using C#, ASP.NET MVC, and related technologies.</li>'
+                    . '<li>Worked on admin and e-commerce websites for South Africa\'s leading distributor of branded promotional products.</li>'
+                    . '<li>Designed and implemented Product Information Management (PIM) admin systems to streamline data handling and improve operational efficiency.</li>'
+                    . '<li>Collaborated with cross-functional teams to gather requirements and deliver scalable software solutions.</li>'
+                    . '<li>Optimized application performance and resolved technical issues to ensure seamless functionality.</li>'
+                    . '<li>Contributed to the development of user-centric features and interfaces, enhancing overall user experience.</li>'
+                    . '</ul>'
+                    . '<h6 class="mt-4 mb-2 fw-bold">Key Projects</h6>'
+                    . '<ul>'
+                    . '<li><strong>E-commerce Website</strong> — Working on a team to develop a fully functional e-commerce platform for a leading distributor of branded promotional products.'
+                    . ' <em>C#, ASP.NET MVC, SQL Server, JavaScript</em></li>'
+                    . '<li><strong>Product Information Management (PIM) System</strong> — Implemented a PIM admin system to streamline data handling and improve operational efficiency.'
+                    . ' <em>C#, ASP.NET MVC, SQL Server, RESTful APIs</em></li>'
+                    . '<li><strong>Customer Portal</strong> — Built a user-friendly customer portal for managing orders, tracking shipments, and accessing support resources.'
+                    . ' <em>C#, ASP.NET Core, React, SQL Server</em></li>'
+                    . '</ul>',
+            ],
+        ];
+
+        foreach ($experiences as $data) {
+            $slug = Str::slug($data['title'] . '-' . $data['company']);
+
+            Experience::firstOrCreate(
+                ['slug' => $slug],
+                array_merge($data, ['slug' => $slug])
+            );
+        }
+
+        // ── Skills (frameworks & tools) ────────────────────────────────────────
+        $skills = [
+            [
+                'name'        => 'ASP.NET Core',
+                'icon'        => 'devicon-dot-net-plain colored',
+                'description' => 'This is the framework I have been working with professionally since 2021, building PIMs (Product Information Management), admin portals, and e-commerce websites at JHnet.',
+                'order'       => 1,
+            ],
+            [
+                'name'        => 'Umbraco',
+                'icon'        => 'devicon-umbraco-plain colored',
+                'description' => 'I have been using Umbraco as a frontend/content manager since 2021 and only started working on creating projects with it from 2024.',
+                'order'       => 2,
+            ],
+            [
+                'name'        => 'Flutter',
+                'icon'        => 'devicon-flutter-plain colored',
+                'description' => 'This is something I learnt through an online course and used to create the GIWU App — a cross-platform Bible application.',
+                'order'       => 3,
+            ],
+            [
+                'name'        => 'Laravel',
+                'icon'        => 'devicon-laravel-plain colored',
+                'description' => 'A self-taught framework I use to build personal projects, including this one. PHP was one of the first languages I learnt, and I rely on AI (Claude) heavily while working with it.',
+                'order'       => 4,
+            ],
+            [
+                'name'        => 'React.js',
+                'icon'        => 'devicon-react-original colored',
+                'description' => 'A framework I have been using since 2015 — self-taught and heavily used across my personal projects.',
+                'order'       => 5,
+            ],
+        ];
+
+        foreach ($skills as $data) {
+            Skill::firstOrCreate(
+                ['name' => $data['name']],
+                $data
             );
         }
     }

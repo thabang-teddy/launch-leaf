@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
-    green:     '#2DC9A2',
-    greenSoft: '#E8F7F2',
-    greenText: '#1A9A7E',
+    green:     '#e74c3c',
+    greenSoft: 'rgba(231,76,60,0.10)',
+    greenText: '#c0392b',
     sidebar:   '#FFFFFF',
-    bg:        '#F0F4F3',
-    border:    '#E3EDEA',
-    text:      '#1B2E2B',
-    muted:     '#748D8A',
+    bg:        '#f7f7f7',
+    border:    '#ebebeb',
+    text:      '#1a1a2e',
+    muted:     '#888',
     card:      '#FFFFFF',
 };
 
@@ -33,6 +33,7 @@ function Ico({ name, size = 16, color = 'currentColor' }) {
         logout:    <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
         search:    <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
         globe:     <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
+        layers:    <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
     };
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -50,6 +51,7 @@ const NAV = [
     { label: 'Accounts',     href: 'dashboard.accounts.index',  icon: 'globe',     match: 'dashboard.accounts.*' },
     { label: 'Portfolio',    href: 'dashboard.portfolio.index', icon: 'briefcase', match: 'dashboard.portfolio.*' },
     { label: 'Experience',   href: 'dashboard.experience.index',icon: 'clock',     match: 'dashboard.experience.*' },
+    { label: 'Skills',       href: 'dashboard.skills.index',    icon: 'layers',    match: 'dashboard.skills.*' },
     { label: 'Personal Info',href: 'dashboard.personal-info',   icon: 'user',      match: 'dashboard.personal-info*' },
     { label: 'Tips',         href: 'dashboard.tips.index',      icon: 'bulb',      match: 'dashboard.tips.*' },
     { label: 'Pages',        href: 'dashboard.pages.index',     icon: 'file',      match: 'dashboard.pages.*' },
@@ -64,7 +66,7 @@ function NavLink({ item }) {
     const active = route().current(item.match);
     const [hovered, setHovered] = useState(false);
 
-    const bg    = active ? C.greenSoft : hovered ? '#F6FAF9' : 'transparent';
+    const bg    = active ? C.greenSoft : hovered ? '#fdf1f0' : 'transparent';
     const color = active ? C.greenText : hovered ? C.greenText : C.muted;
     const fw    = active ? 600 : 500;
 
@@ -96,7 +98,7 @@ function IconBtn({ icon, onClick, title }) {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
-                background: hovered ? '#F0F4F3' : 'none', border: 'none', cursor: 'pointer',
+                background: hovered ? '#f7f7f7' : 'none', border: 'none', cursor: 'pointer',
                 padding: 7, borderRadius: 8, color: C.muted, display: 'flex',
                 alignItems: 'center', transition: 'background 140ms ease',
             }}
@@ -139,7 +141,7 @@ export default function DashboardLayout({ header, children }) {
                     <Link href={route('dashboard.home')} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
                         <div style={{
                             width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                            background: `linear-gradient(135deg, ${C.green} 0%, #1BA882 100%)`,
+                            background: `linear-gradient(135deg, ${C.green} 0%, #c0392b 100%)`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: 'white', fontWeight: 800, fontSize: 17, letterSpacing: '-1px',
                         }}>
@@ -159,7 +161,7 @@ export default function DashboardLayout({ header, children }) {
                 {/* CTA card */}
                 <div style={{ margin: '0 10px 14px', flexShrink: 0 }}>
                     <div style={{
-                        background: `linear-gradient(135deg, ${C.green} 0%, #1BA882 100%)`,
+                        background: `linear-gradient(135deg, ${C.green} 0%, #c0392b 100%)`,
                         borderRadius: 12, padding: '16px 16px 14px',
                     }}>
                         <p style={{ margin: '0 0 3px', fontSize: 12, fontWeight: 700, color: 'white', letterSpacing: '0.05px' }}>
@@ -209,7 +211,7 @@ export default function DashboardLayout({ header, children }) {
                             style={{
                                 width: '100%', padding: '7px 10px 7px 30px',
                                 border: `1px solid ${C.border}`, borderRadius: 8,
-                                fontSize: 13, outline: 'none', background: '#F7FAFA',
+                                fontSize: 13, outline: 'none', background: '#f7f7f7',
                                 color: C.text, boxSizing: 'border-box',
                             }}
                         />
@@ -225,7 +227,7 @@ export default function DashboardLayout({ header, children }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{
                             width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                            background: `linear-gradient(135deg, ${C.green} 0%, #1BA882 100%)`,
+                            background: `linear-gradient(135deg, ${C.green} 0%, #c0392b 100%)`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: 'white', fontWeight: 700, fontSize: 12,
                         }}>

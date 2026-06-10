@@ -1,7 +1,7 @@
 import FrontendLayout from '@/Layouts/FrontendLayout';
 import { Head, Link } from '@inertiajs/react';
 
-export default function About({ info }) {
+export default function About({ info, skills = [] }) {
     if (!info) {
         return (
             <FrontendLayout>
@@ -31,9 +31,7 @@ export default function About({ info }) {
                 <div className="container" style={{ maxWidth: '860px' }}>
 
                     {/* Photo + name card */}
-                    <div
-                        className="d-flex flex-column flex-md-row align-items-center gap-5 mb-5"
-                    >
+                    <div className="d-flex flex-column flex-md-row align-items-center gap-5 mb-5">
                         {/* Avatar */}
                         <div style={{ flexShrink: 0 }}>
                             {info.avatar_path ? (
@@ -76,10 +74,7 @@ export default function About({ info }) {
                                 {info.name}
                             </h2>
                             {info.headline && (
-                                <p
-                                    className="text-accent fw-700 mb-2"
-                                    style={{ fontSize: '1.05rem' }}
-                                >
+                                <p className="text-accent fw-700 mb-2" style={{ fontSize: '1.05rem' }}>
                                     {info.headline}
                                 </p>
                             )}
@@ -114,6 +109,71 @@ export default function About({ info }) {
                                     {paragraph}
                                 </p>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Skills / frameworks */}
+                    {skills.length > 0 && (
+                        <div className="mb-5">
+                            <h3
+                                className="fw-700 text-dark-ll mb-4"
+                                style={{ fontSize: '1.1rem', letterSpacing: '0.02em' }}
+                            >
+                                Frameworks &amp; Technologies
+                            </h3>
+                            <div className="row g-3">
+                                {skills.map(skill => (
+                                    <div key={skill.id} className="col-sm-6">
+                                        <div
+                                            style={{
+                                                border: '1px solid var(--ll-border, #e5e7eb)',
+                                                borderRadius: '12px',
+                                                padding: '1.25rem 1.25rem 1rem',
+                                                background: 'var(--ll-surface, #fff)',
+                                                height: '100%',
+                                                transition: 'box-shadow 200ms ease, transform 200ms ease',
+                                            }}
+                                            onMouseEnter={e => {
+                                                e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.08)';
+                                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                            }}
+                                            onMouseLeave={e => {
+                                                e.currentTarget.style.boxShadow = 'none';
+                                                e.currentTarget.style.transform = 'translateY(0)';
+                                            }}
+                                        >
+                                            <div className="d-flex align-items-center gap-3 mb-2">
+                                                {skill.icon ? (
+                                                    <i
+                                                        className={skill.icon}
+                                                        style={{ fontSize: '2rem', lineHeight: 1, flexShrink: 0 }}
+                                                    />
+                                                ) : (
+                                                    <span style={{ fontSize: '2rem', lineHeight: 1, flexShrink: 0 }}>🔧</span>
+                                                )}
+                                                <span
+                                                    className="fw-700 text-dark-ll"
+                                                    style={{ fontSize: '0.95rem' }}
+                                                >
+                                                    {skill.name}
+                                                </span>
+                                            </div>
+                                            {skill.description && (
+                                                <p
+                                                    style={{
+                                                        fontSize: '0.83rem',
+                                                        lineHeight: 1.7,
+                                                        color: 'var(--ll-muted)',
+                                                        margin: 0,
+                                                    }}
+                                                >
+                                                    {skill.description}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 

@@ -23,6 +23,7 @@ use App\Http\Controllers\Dashboard\AccountController       as DashAccountControl
 use App\Http\Controllers\Dashboard\PortfolioController     as DashPortfolioController;
 use App\Http\Controllers\Dashboard\ExperienceController    as DashExperienceController;
 use App\Http\Controllers\Dashboard\PersonalInfoController  as DashPersonalInfoController;
+use App\Http\Controllers\Dashboard\SkillController         as DashSkillController;
 use App\Http\Controllers\Dashboard\TipController           as DashTipController;
 use App\Http\Controllers\Dashboard\ContactController       as DashContactController;
 use App\Http\Controllers\Dashboard\GitHubSyncController;
@@ -77,6 +78,7 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     // Content CRUD
     Route::resource('portfolio',  DashPortfolioController::class);
     Route::resource('experience', DashExperienceController::class);
+    Route::resource('skills',     DashSkillController::class);
     Route::resource('tips',       DashTipController::class);
     Route::resource('pages',      PageController::class);
     Route::resource('notes',      NoteController::class);

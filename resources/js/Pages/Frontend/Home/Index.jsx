@@ -1,16 +1,25 @@
 import FrontendLayout from '@/Layouts/FrontendLayout';
 import { Head, Link } from '@inertiajs/react';
 
-const SERVICES = [
-    { icon: '💡', title: 'Business Strategy',  desc: 'Turning ideas into scalable, real-world solutions with a clear product vision.' },
-    { icon: '📱', title: 'App Development',     desc: 'Modern web and mobile applications built for performance and reliability.' },
-    { icon: '🎨', title: 'UI / UX Design',      desc: 'Clean, user-centred interfaces crafted for clarity and engagement.' },
-    { icon: '🔒', title: 'Secure Systems',      desc: 'Security-first architecture that protects users and data at every layer.' },
-    { icon: '⚡', title: 'Performance',          desc: 'Optimised, lightning-fast code that scales without compromise.' },
-    { icon: '🚀', title: 'DevOps & CI/CD',      desc: 'Reliable pipelines and cloud infrastructure for continuous delivery.' },
+function SkillIcon({ icon }) {
+    if (!icon) return null;
+    const isCssClass = /^[a-z][a-z0-9-_ ]*$/i.test(icon);
+    return isCssClass
+        ? <i className={icon} style={{ fontSize: '1.8rem', lineHeight: 1 }} />
+        : <span style={{ fontSize: '1.4rem', lineHeight: 1 }}>{icon}</span>;
+}
+
+const DEFAULT_SKILLS = [
+    { icon: '💡', name: 'Business Strategy',  description: 'Turning ideas into scalable, real-world solutions with a clear product vision.' },
+    { icon: '📱', name: 'App Development',     description: 'Modern web and mobile applications built for performance and reliability.' },
+    { icon: '🎨', name: 'UI / UX Design',      description: 'Clean, user-centred interfaces crafted for clarity and engagement.' },
+    { icon: '🔒', name: 'Secure Systems',      description: 'Security-first architecture that protects users and data at every layer.' },
+    { icon: '⚡', name: 'Performance',          description: 'Optimised, lightning-fast code that scales without compromise.' },
+    { icon: '🚀', name: 'DevOps & CI/CD',      description: 'Reliable pipelines and cloud infrastructure for continuous delivery.' },
 ];
 
-export default function Home({ personalInfo }) {
+export default function Home({ personalInfo, skills }) {
+    const displaySkills = skills?.length ? skills : DEFAULT_SKILLS;
     const info = personalInfo;
 
     return (
@@ -99,20 +108,20 @@ export default function Home({ personalInfo }) {
                 </div>
             </section>
 
-            {/* ── What I Do ── */}
+            {/* ── Frameworks & Technologies ── */}
             <section className="ll-section-alt">
                 <div className="container">
                     <div className="text-center mb-5">
                         <span className="ll-label">Features</span>
-                        <h2 className="ll-title mt-1">What I Do</h2>
+                        <h2 className="ll-title mt-1">Frameworks &amp; Technologies</h2>
                     </div>
                     <div className="row g-4">
-                        {SERVICES.map(s => (
-                            <div key={s.title} className="col-md-6 col-lg-4">
+                        {displaySkills.map((s, i) => (
+                            <div key={s.name ?? i} className="col-md-6 col-lg-4">
                                 <div className="ll-service-card">
-                                    <div className="ll-service-icon">{s.icon}</div>
-                                    <h5>{s.title}</h5>
-                                    <p>{s.desc}</p>
+                                    {s.icon && <div className="ll-service-icon"><SkillIcon icon={s.icon} /></div>}
+                                    <h5>{s.name}</h5>
+                                    {s.description && <p>{s.description}</p>}
                                 </div>
                             </div>
                         ))}
