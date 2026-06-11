@@ -44,7 +44,7 @@ export default function FrontendLayout({ children }) {
                                 </Link>
                             ))}
                             <Link href={route('contact')} className="ll-hire-btn ms-2">
-                                Hire Me
+                                Get In Touch
                             </Link>
                         </div>
 
@@ -77,7 +77,7 @@ export default function FrontendLayout({ children }) {
                                 className="ll-hire-btn d-inline-block mt-2"
                                 onClick={() => setMobileOpen(false)}
                             >
-                                Hire Me
+                                Get In Touch
                             </Link>
                         </div>
                     )}
