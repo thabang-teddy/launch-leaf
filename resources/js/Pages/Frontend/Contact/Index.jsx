@@ -89,79 +89,82 @@ export default function Contact() {
                             </div>
                         </div>
 
-                        {/* Right: form */}
+                        {/* Right: form or success */}
                         <div className="col-lg-8">
-                            {flash?.success && (
+                            {flash?.success ? (
                                 <div
-                                    className="mb-4 p-3 rounded"
+                                    className="p-4 rounded text-center"
                                     style={{
                                         background: 'rgba(25,135,84,0.08)',
                                         border: '1px solid rgba(25,135,84,0.25)',
-                                        color: '#146c43',
-                                        fontSize: '0.9rem',
                                     }}
                                 >
-                                    ✓ {flash.success}
+                                    <h3 className="fw-800" style={{ color: '#146c43' }}>
+                                        Message Sent!
+                                    </h3>
+                                    <p className="mb-0" style={{ color: '#146c43' }}>
+                                        {flash.success}
+                                    </p>
                                 </div>
+                            ) : (
+                                <form onSubmit={submit}>
+                                    <div className="row g-3">
+                                        <div className="col-sm-6">
+                                            <label className="form-label small fw-700">Your Name</label>
+                                            <input
+                                                className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+                                                placeholder="John Doe"
+                                                value={data.name}
+                                                onChange={e => setData('name', e.target.value)}
+                                            />
+                                            {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+                                        </div>
+                                        <div className="col-sm-6">
+                                            <label className="form-label small fw-700">Email Address</label>
+                                            <input
+                                                type="email"
+                                                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                                                placeholder="john@example.com"
+                                                value={data.email}
+                                                onChange={e => setData('email', e.target.value)}
+                                            />
+                                            {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                                        </div>
+                                        <div className="col-12">
+                                            <label className="form-label small fw-700">
+                                                Subject{' '}
+                                                <span className="text-muted-ll fw-400">(optional)</span>
+                                            </label>
+                                            <input
+                                                className="form-control"
+                                                placeholder="Project inquiry"
+                                                value={data.subject}
+                                                onChange={e => setData('subject', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="col-12">
+                                            <label className="form-label small fw-700">Message</label>
+                                            <textarea
+                                                rows={6}
+                                                className={`form-control ${errors.message ? 'is-invalid' : ''}`}
+                                                placeholder="Tell me about your project…"
+                                                value={data.message}
+                                                onChange={e => setData('message', e.target.value)}
+                                            />
+                                            {errors.message && <div className="invalid-feedback">{errors.message}</div>}
+                                        </div>
+                                        <div className="col-12">
+                                            <button
+                                                type="submit"
+                                                className="btn-accent"
+                                                disabled={processing}
+                                            >
+                                                {processing ? 'Sending…' : 'Send Message'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
                             )}
-
-                            <form onSubmit={submit}>
-                                <div className="row g-3">
-                                    <div className="col-sm-6">
-                                        <label className="form-label small fw-700">Your Name</label>
-                                        <input
-                                            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-                                            placeholder="John Doe"
-                                            value={data.name}
-                                            onChange={e => setData('name', e.target.value)}
-                                        />
-                                        {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-                                    </div>
-                                    <div className="col-sm-6">
-                                        <label className="form-label small fw-700">Email Address</label>
-                                        <input
-                                            type="email"
-                                            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                                            placeholder="john@example.com"
-                                            value={data.email}
-                                            onChange={e => setData('email', e.target.value)}
-                                        />
-                                        {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                                    </div>
-                                    <div className="col-12">
-                                        <label className="form-label small fw-700">
-                                            Subject{' '}
-                                            <span className="text-muted-ll fw-400">(optional)</span>
-                                        </label>
-                                        <input
-                                            className="form-control"
-                                            placeholder="Project inquiry"
-                                            value={data.subject}
-                                            onChange={e => setData('subject', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="col-12">
-                                        <label className="form-label small fw-700">Message</label>
-                                        <textarea
-                                            rows={6}
-                                            className={`form-control ${errors.message ? 'is-invalid' : ''}`}
-                                            placeholder="Tell me about your project…"
-                                            value={data.message}
-                                            onChange={e => setData('message', e.target.value)}
-                                        />
-                                        {errors.message && <div className="invalid-feedback">{errors.message}</div>}
-                                    </div>
-                                    <div className="col-12">
-                                        <button
-                                            type="submit"
-                                            className="btn-accent"
-                                            disabled={processing}
-                                        >
-                                            {processing ? 'Sending…' : 'Send Message'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </form>
                         </div>
 
                     </div>
