@@ -30,7 +30,7 @@ export default function ProjectsIndex({ projects }) {
                                         style={{ textDecoration: 'none' }}
                                     >
                                         <div
-                                            className="h-100 p-4 rounded"
+                                            className="h-100 rounded overflow-hidden"
                                             style={{
                                                 background: '#fff',
                                                 border: '1px solid var(--ll-border)',
@@ -48,34 +48,54 @@ export default function ProjectsIndex({ projects }) {
                                                 e.currentTarget.style.borderColor = 'var(--ll-border)';
                                             }}
                                         >
-                                            {/* GitHub icon + title */}
-                                            <div className="d-flex align-items-start gap-3">
+                                            {/* Thumbnail */}
+                                            {p.image ? (
+                                                <img
+                                                    src={`/storage/${p.image}`}
+                                                    alt={p.title}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '180px',
+                                                        objectFit: 'cover',
+                                                        display: 'block',
+                                                    }}
+                                                />
+                                            ) : (
                                                 <div
-                                                    className="ll-service-icon mt-1"
-                                                    style={{ flexShrink: 0 }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '80px',
+                                                        background: 'var(--ll-surface, #f8f9fa)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        fontSize: '2rem',
+                                                    }}
                                                 >
                                                     💻
                                                 </div>
-                                                <div>
-                                                    <h5 className="fw-700 text-dark-ll mb-1" style={{ fontSize: '0.97rem' }}>
-                                                        {p.title}
-                                                    </h5>
-                                                    {p.description && (
-                                                        <p className="text-muted-ll small mb-2" style={{ lineHeight: 1.6 }}>
-                                                            {p.description.length > 120
-                                                                ? p.description.substring(0, 120) + '…'
-                                                                : p.description}
-                                                        </p>
-                                                    )}
-                                                    {p.github_url && (
-                                                        <span
-                                                            className="text-muted-ll"
-                                                            style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}
-                                                        >
-                                                            🔗 {p.github_url}
-                                                        </span>
-                                                    )}
-                                                </div>
+                                            )}
+
+                                            {/* Body */}
+                                            <div className="p-4">
+                                                <h5 className="fw-700 text-dark-ll mb-1" style={{ fontSize: '0.97rem' }}>
+                                                    {p.title}
+                                                </h5>
+                                                {p.description && (
+                                                    <p className="text-muted-ll small mb-2" style={{ lineHeight: 1.6 }}>
+                                                        {p.description.length > 120
+                                                            ? p.description.substring(0, 120) + '…'
+                                                            : p.description}
+                                                    </p>
+                                                )}
+                                                {p.github_url && (
+                                                    <span
+                                                        className="text-muted-ll"
+                                                        style={{ fontSize: '0.75rem', wordBreak: 'break-all' }}
+                                                    >
+                                                        🔗 {p.github_url}
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </Link>

@@ -3,7 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ProjectCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        title: '', description: '', github_url: '', order: 0, is_active: true,
+        title: '', description: '', content: '', github_url: '', image: null, order: 0, is_active: true,
     });
 
     const submit = (e) => {
@@ -15,7 +15,7 @@ export default function ProjectCreate() {
         <DashboardLayout header="New GitHub Project">
             <Head title="New Project" />
             <div style={{ maxWidth: '640px' }}>
-                <form onSubmit={submit}>
+                <form onSubmit={submit} encType="multipart/form-data">
                     <div className="card border-0 shadow-sm">
                         <div className="card-body d-flex flex-column gap-3">
                             <div>
@@ -31,6 +31,28 @@ export default function ProjectCreate() {
                             <div>
                                 <label className="form-label fw-semibold small">Description</label>
                                 <textarea className="form-control" rows={3} value={data.description} onChange={e => setData('description', e.target.value)} />
+                            </div>
+                            <div>
+                                <label className="form-label fw-semibold small">Content <span className="text-muted fw-normal">(Markdown, max 10 000 chars)</span></label>
+                                <textarea
+                                    className={`form-control font-monospace ${errors.content ? 'is-invalid' : ''}`}
+                                    rows={8}
+                                    value={data.content}
+                                    onChange={e => setData('content', e.target.value)}
+                                    maxLength={10000}
+                                />
+                                <div className="form-text text-end">{data.content.length} / 10 000</div>
+                                {errors.content && <div className="invalid-feedback">{errors.content}</div>}
+                            </div>
+                            <div>
+                                <label className="form-label fw-semibold small">Image <span className="text-muted fw-normal">(JPEG/PNG/GIF/WebP, max 2 MB)</span></label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className={`form-control ${errors.image ? 'is-invalid' : ''}`}
+                                    onChange={e => setData('image', e.target.files[0] ?? null)}
+                                />
+                                {errors.image && <div className="invalid-feedback">{errors.image}</div>}
                             </div>
                             <div className="row g-3">
                                 <div className="col-sm-6">

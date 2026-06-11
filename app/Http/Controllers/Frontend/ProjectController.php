@@ -14,7 +14,7 @@ class ProjectController extends Controller
         return Inertia::render('Frontend/Projects/Index', [
             'projects' => GitHubProject::where('is_active', true)
                 ->orderBy('order')
-                ->get(['id', 'title', 'slug', 'description', 'github_url', 'synced_at']),
+                ->get(['id', 'title', 'slug', 'description', 'image', 'github_url', 'synced_at']),
         ]);
     }
 

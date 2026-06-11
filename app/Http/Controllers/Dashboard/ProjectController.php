@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\GitHubProject;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,7 +30,9 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
+            'content'     => 'nullable|string|max:10000',
             'github_url'  => 'required|url|max:255',
+            'image'       => 'nullable|image|max:2048',
             'order'       => 'nullable|integer|min:0',
             'is_active'   => 'boolean',
         ]);
@@ -37,6 +40,10 @@ class ProjectController extends Controller
         $validated['slug']      = $this->uniqueSlug($validated['title']);
         $validated['order']     ??= 0;
         $validated['is_active'] ??= true;
+
+        if ($request->hasFile('image')) {
+            $validated['image'] = $request->file('image')->store('projects', 'public');
+        }
 
         GitHubProject::create($validated);
 
@@ -58,12 +65,23 @@ class ProjectController extends Controller
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
+            'content'     => 'nullable|string|max:10000',
             'github_url'  => 'required|url|max:255',
+            'image'       => 'nullable|image|max:2048',
             'order'       => 'nullable|integer|min:0',
             'is_active'   => 'boolean',
         ]);
 
         $validated['slug'] = $this->uniqueSlug($validated['title'], $project->id);
+
+        if ($request->hasFile('image')) {
+            if ($project->image) {
+                Storage::disk('public')->delete($project->image);
+            }
+            $validated['image'] = $request->file('image')->store('projects', 'public');
+        } else {
+            unset($validated['image']);
+        }
 
         $project->update($validated);
 
@@ -72,6 +90,10 @@ class ProjectController extends Controller
 
     public function destroy(GitHubProject $project): RedirectResponse
     {
+        if ($project->image) {
+            Storage::disk('public')->delete($project->image);
+        }
+
         $project->delete();
 
         return redirect()->route('dashboard.projects.index')->with('success', 'Project deleted.');

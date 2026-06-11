@@ -10,7 +10,7 @@ class GitHubProject extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'slug', 'description', 'github_url',
+        'title', 'slug', 'description', 'content', 'image', 'github_url',
         'readme_content', 'file_tree', 'synced_at',
         'order', 'is_active',
     ];
