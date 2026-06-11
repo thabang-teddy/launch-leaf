@@ -170,7 +170,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'name'        => 'Umbraco',
-                'icon'        => 'devicon-umbraco-plain colored',
+                'icon'        => 'fa-brands fa-umbraco text-primary',
                 'description' => 'I have been using Umbraco as a frontend/content manager since 2021 and only started working on creating projects with it from 2024.',
                 'order'       => 2,
             ],
@@ -195,7 +195,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($skills as $data) {
-            Skill::firstOrCreate(
+            Skill::updateOrCreate(
                 ['name' => $data['name']],
                 $data
             );

@@ -45,7 +45,9 @@ export default function SkillEdit({ item }) {
                                     )}
                                 </div>
                                 <div className="form-text">
-                                    Use a <a href="https://devicon.dev" target="_blank" rel="noreferrer">Devicon</a> class, e.g. <code>devicon-react-original colored</code>
+                                    Use a <a href="https://devicon.dev" target="_blank" rel="noreferrer">Devicon</a> class (e.g. <code>devicon-react-original colored</code>)
+                                    or a <a href="https://fontawesome.com/icons" target="_blank" rel="noreferrer">Font Awesome</a> class (e.g. <code>fa-brands fa-umbraco</code>).
+                                    You can also enter an emoji directly.
                                 </div>
                             </div>
 
