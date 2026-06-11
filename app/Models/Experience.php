@@ -10,7 +10,7 @@ class Experience extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'slug', 'company', 'location',
+        'title', 'slug', 'company', 'summary', 'location',
         'start_date', 'end_date', 'is_current',
         'description', 'type', 'order',
     ];

@@ -1,9 +1,10 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ExperienceCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        title: '', company: '', location: '', start_date: '', end_date: '',
+        title: '', company: '', summary: '', location: '', start_date: '', end_date: '',
         is_current: false, description: '', type: 'work', order: 0,
     });
 
@@ -26,6 +27,16 @@ export default function ExperienceCreate() {
                                     {errors[key] && <div className="invalid-feedback">{errors[key]}</div>}
                                 </div>
                             ))}
+                            <div>
+                                <label className="form-label fw-semibold small">Summary <span className="text-muted fw-normal">(short one-liner)</span></label>
+                                <input
+                                    className={`form-control ${errors.summary ? 'is-invalid' : ''}`}
+                                    maxLength={500}
+                                    value={data.summary}
+                                    onChange={e => setData('summary', e.target.value)}
+                                />
+                                {errors.summary && <div className="invalid-feedback">{errors.summary}</div>}
+                            </div>
                             <div>
                                 <label className="form-label fw-semibold small">Type *</label>
                                 <select className="form-select" value={data.type} onChange={e => setData('type', e.target.value)}>
@@ -50,7 +61,12 @@ export default function ExperienceCreate() {
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Description</label>
-                                <textarea className="form-control" rows={4} value={data.description} onChange={e => setData('description', e.target.value)} />
+                                <WysiwygEditor
+                                    value={data.description}
+                                    onChange={val => setData('description', val)}
+                                    placeholder="Describe your role and responsibilities…"
+                                />
+                                {errors.description && <div className="text-danger small mt-1">{errors.description}</div>}
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Order</label>

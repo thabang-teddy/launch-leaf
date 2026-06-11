@@ -43,14 +43,19 @@ export default function ExperienceShow({ experience: e }) {
                     {fmt(e.start_date)} – {e.is_current ? 'Present' : fmt(e.end_date)}
                 </span>
 
+                {/* Summary */}
+                {e.summary && (
+                    <p className="mt-3 mb-0" style={{ color: 'var(--ll-text)', fontStyle: 'italic' }}>
+                        {e.summary}
+                    </p>
+                )}
+
                 {/* Description */}
                 {e.description && (
                     <div
-                        className="mt-4"
-                        style={{ whiteSpace: 'pre-wrap', lineHeight: 1.85, color: 'var(--ll-text)' }}
-                    >
-                        {e.description}
-                    </div>
+                        className="mt-4 ll-prose"
+                        dangerouslySetInnerHTML={{ __html: e.description }}
+                    />
                 )}
             </div>
         </FrontendLayout>
