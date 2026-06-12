@@ -11,6 +11,7 @@ use App\Http\Controllers\Frontend\ExperienceController;
 use App\Http\Controllers\Frontend\PersonalInfoController;
 use App\Http\Controllers\Frontend\TipController;
 use App\Http\Controllers\Frontend\ContactController;
+use App\Http\Controllers\Frontend\PageController as FrontendPageController;
 
 // ─── Dashboard controllers ────────────────────────────────────────────────────
 use App\Http\Controllers\Dashboard\PageController;
@@ -56,6 +57,8 @@ Route::get('/tips/{slug}', [TipController::class, 'show'])->name('tips.show');
 
 Route::get('/contact',  [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+
+Route::get('/pages/{slug}', [FrontendPageController::class, 'show'])->name('pages.show');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dashboard (auth-protected)

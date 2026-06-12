@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function PageEdit({ page }) {
@@ -27,7 +28,7 @@ export default function PageEdit({ page }) {
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Content</label>
-                                <textarea className="form-control" rows={10} value={data.content} onChange={e => setData('content', e.target.value)} />
+                                <WysiwygEditor value={data.content} onChange={val => setData('content', val)} placeholder="Write your page content…" />
                             </div>
                             <div className="form-check">
                                 <input type="checkbox" className="form-check-input" id="is_published" checked={data.is_published} onChange={e => setData('is_published', e.target.checked)} />
@@ -37,6 +38,7 @@ export default function PageEdit({ page }) {
                         <div className="card-footer bg-transparent d-flex gap-2">
                             <button type="submit" className="btn btn-primary" disabled={processing}>{processing ? 'Saving…' : 'Save Changes'}</button>
                             <Link href={route('dashboard.pages.index')} className="btn btn-outline-secondary">Cancel</Link>
+                            <a href={route('pages.show', page.slug)} target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary ms-auto">View Page</a>
                         </div>
                     </div>
                 </form>

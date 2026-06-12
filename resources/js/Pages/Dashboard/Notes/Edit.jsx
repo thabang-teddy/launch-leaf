@@ -25,8 +25,13 @@ export default function NoteEdit({ note }) {
                                 {errors.title && <div className="invalid-feedback">{errors.title}</div>}
                             </div>
                             <div>
-                                <label className="form-label fw-semibold small">Content</label>
-                                <textarea className="form-control" rows={10} value={data.content} onChange={e => setData('content', e.target.value)} />
+                                <label className="form-label fw-semibold small">Content <span className="text-muted fw-normal">Markdown supported</span></label>
+                                <textarea
+                                    className="form-control font-monospace"
+                                    rows={12}
+                                    value={data.content}
+                                    onChange={e => setData('content', e.target.value)}
+                                />
                             </div>
                         </div>
                         <div className="card-footer bg-transparent d-flex gap-2">

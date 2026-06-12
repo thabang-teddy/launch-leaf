@@ -53,7 +53,7 @@ export default function PortfolioShow({ item }) {
 
                 {/* Content */}
                 {item.content && (
-                    <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{item.content}</div>
+                    <div className="ll-prose" dangerouslySetInnerHTML={{ __html: item.content }} />
                 )}
             </div>
         </FrontendLayout>

@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function PortfolioCreate() {
@@ -31,7 +32,7 @@ export default function PortfolioCreate() {
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Full Content</label>
-                                <textarea className="form-control" rows={6} value={data.content} onChange={e => setData('content', e.target.value)} />
+                                <WysiwygEditor value={data.content} onChange={val => setData('content', val)} placeholder="Describe the project in detail…" />
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Tech Stack <span className="text-muted fw-normal">(comma separated)</span></label>

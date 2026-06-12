@@ -28,13 +28,13 @@ export default function TipEdit({ tip }) {
                                 {errors.title && <div className="invalid-feedback">{errors.title}</div>}
                             </div>
                             <div>
-                                <label className="form-label fw-semibold small">Problem *</label>
-                                <textarea className={`form-control ${errors.problem ? 'is-invalid' : ''}`} rows={4} value={data.problem} onChange={e => setData('problem', e.target.value)} />
+                                <label className="form-label fw-semibold small">Problem * <span className="text-muted fw-normal">Markdown supported</span></label>
+                                <textarea className={`form-control font-monospace ${errors.problem ? 'is-invalid' : ''}`} rows={6} value={data.problem} onChange={e => setData('problem', e.target.value)} />
                                 {errors.problem && <div className="invalid-feedback">{errors.problem}</div>}
                             </div>
                             <div>
-                                <label className="form-label fw-semibold small">Solution *</label>
-                                <textarea className={`form-control ${errors.solution ? 'is-invalid' : ''}`} rows={4} value={data.solution} onChange={e => setData('solution', e.target.value)} />
+                                <label className="form-label fw-semibold small">Solution * <span className="text-muted fw-normal">Markdown supported</span></label>
+                                <textarea className={`form-control font-monospace ${errors.solution ? 'is-invalid' : ''}`} rows={6} value={data.solution} onChange={e => setData('solution', e.target.value)} />
                                 {errors.solution && <div className="invalid-feedback">{errors.solution}</div>}
                             </div>
                             <div>

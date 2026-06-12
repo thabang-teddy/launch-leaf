@@ -28,8 +28,13 @@ export default function TaskEdit({ task }) {
                                 {errors.title && <div className="invalid-feedback">{errors.title}</div>}
                             </div>
                             <div>
-                                <label className="form-label fw-semibold small">Description</label>
-                                <textarea className="form-control" rows={3} value={data.description} onChange={e => setData('description', e.target.value)} />
+                                <label className="form-label fw-semibold small">Description <span className="text-muted fw-normal">Markdown supported</span></label>
+                                <textarea
+                                    className="form-control font-monospace"
+                                    rows={4}
+                                    value={data.description}
+                                    onChange={e => setData('description', e.target.value)}
+                                />
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Due Date</label>

@@ -1,5 +1,6 @@
 import FrontendLayout from '@/Layouts/FrontendLayout';
 import { Head, Link } from '@inertiajs/react';
+import ReactMarkdown from 'react-markdown';
 
 export default function TipShow({ tip }) {
     return (
@@ -39,7 +40,7 @@ export default function TipShow({ tip }) {
                     >
                         🔴 Problem
                     </div>
-                    <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{tip.problem}</div>
+                    <div className="ll-prose"><ReactMarkdown>{tip.problem}</ReactMarkdown></div>
                 </div>
 
                 {/* Solution */}
@@ -57,7 +58,7 @@ export default function TipShow({ tip }) {
                     >
                         ✅ Solution
                     </div>
-                    <div style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{tip.solution}</div>
+                    <div className="ll-prose"><ReactMarkdown>{tip.solution}</ReactMarkdown></div>
                 </div>
             </div>
         </FrontendLayout>

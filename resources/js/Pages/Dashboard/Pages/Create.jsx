@@ -1,4 +1,5 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
+import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function PageCreate() {
@@ -25,7 +26,7 @@ export default function PageCreate() {
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Content</label>
-                                <textarea className="form-control" rows={10} value={data.content} onChange={e => setData('content', e.target.value)} />
+                                <WysiwygEditor value={data.content} onChange={val => setData('content', val)} placeholder="Write your page content…" />
                             </div>
                             <div className="form-check">
                                 <input type="checkbox" className="form-check-input" id="is_published" checked={data.is_published} onChange={e => setData('is_published', e.target.checked)} />
