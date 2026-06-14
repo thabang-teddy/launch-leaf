@@ -1,15 +1,27 @@
 # /home/thabangt/public_html/.htaccess
-# Routes all domain traffic to the Laravel application's public directory.
-
-Options -Indexes
 
 <IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
     RewriteEngine On
 
-    # If the request already targets launch-leaf/public, stop here.
-    # This prevents an infinite rewrite loop on re-processed requests.
-    RewriteRule ^launch-leaf/public(/.*)?$ - [L,NC]
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Route everything else into the Laravel public directory
-    RewriteRule ^(.*)$ launch-leaf/public/$1 [L,QSA]
+    # Serve real static assets from launch-leaf/public (css, js, images, etc.)
+    RewriteCond %{DOCUMENT_ROOT}/launch-leaf/public%{REQUEST_URI} -f
+    RewriteRule ^(.+)$ launch-leaf/public/$1 [L]
+
+    # Remove trailing slashes
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send all other requests to the front controller
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
 </IfModule>
