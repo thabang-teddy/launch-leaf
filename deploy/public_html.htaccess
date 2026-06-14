@@ -1,18 +1,15 @@
 # /home/thabangt/public_html/.htaccess
-# Place this file at the domain web root.
-# It forwards all traffic from your domain to the Laravel public directory.
+# Routes all domain traffic to the Laravel application's public directory.
 
 Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Serve existing files and directories directly (e.g. cPanel error pages)
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
+    # If the request already targets launch-leaf/public, stop here.
+    # This prevents an infinite rewrite loop on re-processed requests.
+    RewriteRule ^launch-leaf/public(/.*)?$ - [L,NC]
 
-    # Route everything else into the Laravel application
-    RewriteCond %{REQUEST_URI} !^/launch-leaf/public/
-    RewriteRule ^(.*)$ /launch-leaf/public/$1 [L,QSA]
+    # Route everything else into the Laravel public directory
+    RewriteRule ^(.*)$ launch-leaf/public/$1 [L,QSA]
 </IfModule>
