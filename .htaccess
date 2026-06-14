@@ -1,0 +1,21 @@
+# /home/thabangt/public_html/launch-leaf/.htaccess
+# Protects sensitive Laravel files and routes all traffic to public/
+
+Options -Indexes
+
+# Block access to sensitive Laravel files
+<FilesMatch "(\.env|\.env\.example|composer\.json|composer\.lock|artisan|package\.json|package-lock\.json|vite\.config\.js|phpunit\.xml|webpack\.mix\.js)">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to sensitive Laravel directories
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)(/|$) - [F,L]
+
+    # Route all other requests to the public directory
+    RewriteCond %{REQUEST_URI} !^/launch-leaf/public/
+    RewriteRule ^(.*)$ /launch-leaf/public/$1 [L,QSA]
+</IfModule>
