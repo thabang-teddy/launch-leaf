@@ -1,4 +1,4 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function SkillEdit({ item }) {
@@ -6,7 +6,7 @@ export default function SkillEdit({ item }) {
         name:        item.name        ?? '',
         icon:        item.icon        ?? '',
         description: item.description ?? '',
-        order:       item.order       ?? 0,
+        order:       item.order       ?? 1,
     });
 
     const submit = (e) => {
@@ -67,7 +67,7 @@ export default function SkillEdit({ item }) {
                                     type="number"
                                     className="form-control"
                                     value={data.order}
-                                    onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                    onChange={e => setData('order', parseInt(e.target.value) || 1)}
                                 />
                             </div>
                         </div>

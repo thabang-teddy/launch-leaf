@@ -1,4 +1,4 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -13,7 +13,7 @@ export default function ExperienceEdit({ item }) {
         is_current: item.is_current ?? false,
         description: item.description ?? '',
         type: item.type ?? 'work',
-        order: item.order ?? 0,
+        order: item.order ?? 1,
     });
 
     const submit = (e) => {
@@ -78,7 +78,7 @@ export default function ExperienceEdit({ item }) {
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Order</label>
-                                <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 0)} />
+                                <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 1)} />
                             </div>
                         </div>
                         <div className="card-footer bg-transparent d-flex gap-2">

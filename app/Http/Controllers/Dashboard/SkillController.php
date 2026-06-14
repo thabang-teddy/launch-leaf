@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Skill;
+use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,6 +12,8 @@ use Inertia\Response;
 
 class SkillController extends Controller
 {
+    use ResolvesOrder;
+
     public function index(): Response
     {
         return Inertia::render('Dashboard/Skills/Index', [
@@ -29,10 +32,10 @@ class SkillController extends Controller
             'name'        => 'required|string|max:255',
             'icon'        => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
         ]);
 
-        $validated['order'] ??= 0;
+        $validated['order'] = $this->nextAvailableOrder(Skill::class, $validated['order'] ?? 1);
 
         Skill::create($validated);
 
@@ -55,8 +58,12 @@ class SkillController extends Controller
             'name'        => 'required|string|max:255',
             'icon'        => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
         ]);
+
+        if (isset($validated['order'])) {
+            $validated['order'] = $this->nextAvailableOrder(Skill::class, $validated['order'], $skill->id);
+        }
 
         $skill->update($validated);
 

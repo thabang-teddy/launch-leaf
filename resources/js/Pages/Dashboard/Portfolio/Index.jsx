@@ -1,4 +1,4 @@
-import ConfirmModal from '@/Components/ConfirmModal';
+﻿import ConfirmModal from '@/Components/ConfirmModal';
 import SlidePanel from '@/Components/SlidePanel';
 import WysiwygEditor from '@/Components/WysiwygEditor';
 import DashboardLayout from '@/Layouts/DashboardLayout';
@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 const EMPTY = {
     title: '', description: '', content: '', image_path: '',
-    tech_stack: '', live_url: '', repo_url: '', order: 0, is_active: true,
+    tech_stack: '', live_url: '', repo_url: '', order: 1, is_active: true,
 };
 
 function toStackString(v) {
@@ -39,7 +39,7 @@ export default function PortfolioIndex({ items }) {
             tech_stack:  toStackString(item.tech_stack),
             live_url:    item.live_url ?? '',
             repo_url:    item.repo_url ?? '',
-            order:       item.order ?? 0,
+            order:       item.order ?? 1,
             is_active:   item.is_active ?? true,
         });
         setSelected(item);
@@ -220,7 +220,7 @@ export default function PortfolioIndex({ items }) {
                                     type="number"
                                     className="form-control"
                                     value={data.order}
-                                    onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                    onChange={e => setData('order', parseInt(e.target.value) || 1)}
                                 />
                             </div>
                             <div className="col-6 d-flex align-items-end pb-1">

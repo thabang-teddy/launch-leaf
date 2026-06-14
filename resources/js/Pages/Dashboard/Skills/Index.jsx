@@ -4,7 +4,7 @@ import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-const EMPTY = { name: '', icon: '', description: '', order: 0 };
+const EMPTY = { name: '', icon: '', description: '', order: 1 };
 
 export default function SkillsIndex({ items }) {
     const [modal, setModal]         = useState(null);
@@ -27,7 +27,7 @@ export default function SkillsIndex({ items }) {
             name:        item.name ?? '',
             icon:        item.icon ?? '',
             description: item.description ?? '',
-            order:       item.order ?? 0,
+            order:       item.order ?? 1,
         });
         setSelected(item);
         setPanelOpen(true);
@@ -178,7 +178,7 @@ export default function SkillsIndex({ items }) {
                                 type="number"
                                 className="form-control"
                                 value={data.order}
-                                onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                onChange={e => setData('order', parseInt(e.target.value) || 1)}
                             />
                         </div>
                         <div className="d-flex gap-2">

@@ -7,7 +7,7 @@ export default function TaskEdit({ task }) {
         description: task.description ?? '',
         due_date: task.due_date ?? '',
         is_completed: task.is_completed ?? false,
-        order: task.order ?? 0,
+        order: task.order ?? 1,
     });
 
     const submit = (e) => {

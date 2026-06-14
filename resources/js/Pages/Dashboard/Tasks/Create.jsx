@@ -3,7 +3,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function TaskCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        title: '', description: '', due_date: '', order: 0,
+        title: '', description: '', due_date: '', order: 1,
     });
 
     const submit = (e) => {

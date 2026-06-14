@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Portfolio;
+use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class PortfolioController extends Controller
 {
+    use ResolvesOrder;
+
     public function index(): Response
     {
         return Inertia::render('Dashboard/Portfolio/Index', [
@@ -34,13 +37,13 @@ class PortfolioController extends Controller
             'tech_stack'  => 'nullable|string',
             'live_url'    => 'nullable|url|max:255',
             'repo_url'    => 'nullable|url|max:255',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
             'is_active'   => 'boolean',
         ]);
 
         $validated['slug']       = $this->uniqueSlug($validated['title']);
         $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
-        $validated['order']      ??= 0;
+        $validated['order']      = $this->nextAvailableOrder(Portfolio::class, $validated['order'] ?? 1);
         $validated['is_active']  ??= true;
 
         Portfolio::create($validated);
@@ -71,12 +74,16 @@ class PortfolioController extends Controller
             'tech_stack'  => 'nullable|string',
             'live_url'    => 'nullable|url|max:255',
             'repo_url'    => 'nullable|url|max:255',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
             'is_active'   => 'boolean',
         ]);
 
         $validated['slug']       = $this->uniqueSlug($validated['title'], $portfolio->id);
         $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
+
+        if (isset($validated['order'])) {
+            $validated['order'] = $this->nextAvailableOrder(Portfolio::class, $validated['order'], $portfolio->id);
+        }
 
         $portfolio->update($validated);
 

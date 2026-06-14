@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\GitHubProject;
+use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,8 @@ use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    use ResolvesOrder;
+
     public function index(): Response
     {
         return Inertia::render('Dashboard/Projects/Index', [
@@ -33,12 +36,12 @@ class ProjectController extends Controller
             'content'     => 'nullable|string|max:10000',
             'github_url'  => 'required|url|max:255',
             'image'       => 'nullable|image|max:2048',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
             'is_active'   => 'boolean',
         ]);
 
         $validated['slug']      = $this->uniqueSlug($validated['title']);
-        $validated['order']     ??= 0;
+        $validated['order']     = $this->nextAvailableOrder(GitHubProject::class, $validated['order'] ?? 1);
         $validated['is_active'] ??= true;
 
         if ($request->hasFile('image')) {
@@ -68,11 +71,15 @@ class ProjectController extends Controller
             'content'     => 'nullable|string|max:10000',
             'github_url'  => 'required|url|max:255',
             'image'       => 'nullable|image|max:2048',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
             'is_active'   => 'boolean',
         ]);
 
         $validated['slug'] = $this->uniqueSlug($validated['title'], $project->id);
+
+        if (isset($validated['order'])) {
+            $validated['order'] = $this->nextAvailableOrder(GitHubProject::class, $validated['order'], $project->id);
+        }
 
         if ($request->hasFile('image')) {
             if ($project->image) {

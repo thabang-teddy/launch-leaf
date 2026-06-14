@@ -31,6 +31,7 @@ use App\Http\Controllers\Dashboard\GitHubSyncController;
 use App\Http\Controllers\Dashboard\KanbanBoardController;
 use App\Http\Controllers\Dashboard\KanbanProjectController;
 use App\Http\Controllers\Dashboard\HomeController as DashHomeController;
+use App\Http\Controllers\Dashboard\UserController  as DashUserController;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public frontend routes
@@ -149,6 +150,12 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     // Tasks
     Route::resource('tasks', TaskController::class);
 
+    // User account — details + edit
+    Route::get('user',              [DashUserController::class, 'show'])->name('user.show');
+    Route::get('user/edit',         [DashUserController::class, 'edit'])->name('user.edit');
+    Route::patch('user',            [DashUserController::class, 'update'])->name('user.update');
+    Route::put('user/password',     [DashUserController::class, 'updatePassword'])->name('user.password');
+
     // Personal Info — single-record edit/update (no index/create/show/delete)
     Route::get('personal-info',         [DashPersonalInfoController::class, 'edit'])->name('personal-info');
     Route::put('personal-info',         [DashPersonalInfoController::class, 'update'])->name('personal-info.update');
@@ -162,8 +169,8 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
 
 // Keep Breeze's profile routes and auth routes
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile',    [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile',  [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

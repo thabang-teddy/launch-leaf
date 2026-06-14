@@ -1,4 +1,4 @@
-import ConfirmModal from '@/Components/ConfirmModal';
+﻿import ConfirmModal from '@/Components/ConfirmModal';
 import SlidePanel from '@/Components/SlidePanel';
 import WysiwygEditor from '@/Components/WysiwygEditor';
 import DashboardLayout from '@/Layouts/DashboardLayout';
@@ -8,7 +8,7 @@ import { useState } from 'react';
 const EMPTY = {
     title: '', company: '', summary: '', location: '',
     start_date: '', end_date: '', is_current: false,
-    description: '', type: 'work', order: 0,
+    description: '', type: 'work', order: 1,
 };
 
 export default function ExperienceIndex({ items }) {
@@ -38,7 +38,7 @@ export default function ExperienceIndex({ items }) {
             is_current:  item.is_current ?? false,
             description: item.description ?? '',
             type:        item.type ?? 'work',
-            order:       item.order ?? 0,
+            order:       item.order ?? 1,
         });
         setSelected(item);
         setPanelOpen(true);
@@ -223,7 +223,7 @@ export default function ExperienceIndex({ items }) {
                                 type="number"
                                 className="form-control"
                                 value={data.order}
-                                onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                onChange={e => setData('order', parseInt(e.target.value) || 1)}
                             />
                         </div>
                         <div className="d-flex gap-2">

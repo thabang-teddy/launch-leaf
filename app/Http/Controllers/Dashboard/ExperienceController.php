@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Experience;
+use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -12,6 +13,8 @@ use Inertia\Response;
 
 class ExperienceController extends Controller
 {
+    use ResolvesOrder;
+
     public function index(): Response
     {
         return Inertia::render('Dashboard/Experience/Index', [
@@ -36,11 +39,11 @@ class ExperienceController extends Controller
             'is_current'  => 'boolean',
             'description' => 'nullable|string',
             'type'        => 'required|in:work,education',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
         ]);
 
         $validated['slug']       = $this->uniqueSlug($validated['title']);
-        $validated['order']      ??= 0;
+        $validated['order']      = $this->nextAvailableOrder(Experience::class, $validated['order'] ?? 1);
         $validated['is_current'] ??= false;
 
         Experience::create($validated);
@@ -70,10 +73,14 @@ class ExperienceController extends Controller
             'is_current'  => 'boolean',
             'description' => 'nullable|string',
             'type'        => 'required|in:work,education',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
         ]);
 
         $validated['slug'] = $this->uniqueSlug($validated['title'], $experience->id);
+
+        if (isset($validated['order'])) {
+            $validated['order'] = $this->nextAvailableOrder(Experience::class, $validated['order'], $experience->id);
+        }
 
         $experience->update($validated);
 

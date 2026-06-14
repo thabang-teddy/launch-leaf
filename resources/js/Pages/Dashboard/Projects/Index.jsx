@@ -1,4 +1,4 @@
-import ConfirmModal from '@/Components/ConfirmModal';
+﻿import ConfirmModal from '@/Components/ConfirmModal';
 import SlidePanel from '@/Components/SlidePanel';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, router, useForm } from '@inertiajs/react';
@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 const EMPTY = {
     _method: '', title: '', description: '', content: '',
-    github_url: '', image: null, order: 0, is_active: true,
+    github_url: '', image: null, order: 1, is_active: true,
 };
 
 export default function ProjectsIndex({ projects }) {
@@ -33,7 +33,7 @@ export default function ProjectsIndex({ projects }) {
             content:     project.content ?? '',
             github_url:  project.github_url ?? '',
             image:       null,
-            order:       project.order ?? 0,
+            order:       project.order ?? 1,
             is_active:   project.is_active ?? true,
         });
         setSelected(project);
@@ -225,7 +225,7 @@ export default function ProjectsIndex({ projects }) {
                                     type="number"
                                     className="form-control"
                                     value={data.order}
-                                    onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                    onChange={e => setData('order', parseInt(e.target.value) || 1)}
                                 />
                             </div>
                             <div className="col-6 d-flex align-items-end pb-1">

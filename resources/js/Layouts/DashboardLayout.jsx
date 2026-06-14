@@ -59,6 +59,7 @@ const NAV = [
     { label: 'Kanban',       href: 'dashboard.kanban.index',    icon: 'kanban',    match: 'dashboard.kanban*' },
     { label: 'Tasks',        href: 'dashboard.tasks.index',     icon: 'check',     match: 'dashboard.tasks.*' },
     { label: 'Contact',      href: 'dashboard.contact.index',   icon: 'mail',      match: 'dashboard.contact.*' },
+    { label: 'My Account',   href: 'dashboard.user.show',       icon: 'user',      match: 'dashboard.user*' },
 ];
 
 // ─── Hover-aware nav link ─────────────────────────────────────────────────────

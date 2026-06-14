@@ -1,10 +1,10 @@
-import ConfirmModal from '@/Components/ConfirmModal';
+﻿import ConfirmModal from '@/Components/ConfirmModal';
 import SlidePanel from '@/Components/SlidePanel';
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
-const EMPTY = { title: '', description: '', due_date: '', order: 0 };
+const EMPTY = { title: '', description: '', due_date: '', order: 1 };
 
 export default function TasksIndex({ tasks }) {
     const [modal, setModal]         = useState(null);
@@ -27,7 +27,7 @@ export default function TasksIndex({ tasks }) {
             title:       task.title ?? '',
             description: task.description ?? '',
             due_date:    task.due_date ?? '',
-            order:       task.order ?? 0,
+            order:       task.order ?? 1,
         });
         setSelected(task);
         setPanelOpen(true);
@@ -199,7 +199,7 @@ export default function TasksIndex({ tasks }) {
                                 type="number"
                                 className="form-control"
                                 value={data.order}
-                                onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                onChange={e => setData('order', parseInt(e.target.value) || 1)}
                             />
                         </div>
                         <div className="d-flex gap-2">

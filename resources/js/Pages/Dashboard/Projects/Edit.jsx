@@ -1,4 +1,4 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ProjectEdit({ project }) {
@@ -9,7 +9,7 @@ export default function ProjectEdit({ project }) {
         content: project.content ?? '',
         github_url: project.github_url ?? '',
         image: null,
-        order: project.order ?? 0,
+        order: project.order ?? 1,
         is_active: project.is_active ?? true,
     });
 
@@ -74,7 +74,7 @@ export default function ProjectEdit({ project }) {
                             <div className="row g-3">
                                 <div className="col-sm-6">
                                     <label className="form-label fw-semibold small">Order</label>
-                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 0)} />
+                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 1)} />
                                 </div>
                                 <div className="col-sm-6 d-flex align-items-end">
                                     <div className="form-check">

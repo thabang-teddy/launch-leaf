@@ -1,4 +1,4 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
@@ -11,7 +11,7 @@ export default function PortfolioEdit({ item }) {
         tech_stack: item.tech_stack ?? '',
         live_url: item.live_url ?? '',
         repo_url: item.repo_url ?? '',
-        order: item.order ?? 0,
+        order: item.order ?? 1,
         is_active: item.is_active ?? true,
     });
 
@@ -64,7 +64,7 @@ export default function PortfolioEdit({ item }) {
                             <div className="row g-3">
                                 <div className="col-sm-6">
                                     <label className="form-label fw-semibold small">Order</label>
-                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 0)} />
+                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 1)} />
                                 </div>
                                 <div className="col-sm-6 d-flex align-items-end">
                                     <div className="form-check">

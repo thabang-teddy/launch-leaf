@@ -1,20 +1,16 @@
 Bugs:
-page note working
 Experience Start Date  not showing date on edit
+GitHub sync not working
 
 Todo:
-Update admin colours
-Add umbraco icon
-Update home page "Frameworks & Technologies" card
-Update last link to "Contact Me"
-Add a WYSIWYG to the GitHub project with an image upload
 Add image upload, correct Repo URL and Markdown conversion field to the portfolio
-Set all order fields to start at 1 and on save check if the order number already being used, if it is then use the next available one
-Add aa summary to Experience and make Description a WYSIWYG
-Make Tips problem and solution markdown
-Make Pages content markdown
-Make Notes content markdown
-Make Task content markdown
-
+please summaries this app and put it in the portfolio, please replace "Portfolio Website"
 
 Features:
+make a mobile app
+- Dashboard
+- Note
+- Task
+- Contact
+- Kanban
+

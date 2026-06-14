@@ -1,9 +1,9 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function SkillCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        name: '', icon: '', description: '', order: 0,
+        name: '', icon: '', description: '', order: 1,
     });
 
     const submit = (e) => {
@@ -65,7 +65,7 @@ export default function SkillCreate() {
                                     type="number"
                                     className="form-control"
                                     value={data.order}
-                                    onChange={e => setData('order', parseInt(e.target.value) || 0)}
+                                    onChange={e => setData('order', parseInt(e.target.value) || 1)}
                                 />
                             </div>
                         </div>

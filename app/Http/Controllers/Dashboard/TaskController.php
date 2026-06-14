@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,6 +12,8 @@ use Inertia\Response;
 
 class TaskController extends Controller
 {
+    use ResolvesOrder;
+
     public function index(): Response
     {
         return Inertia::render('Dashboard/Tasks/Index', [
@@ -29,10 +32,10 @@ class TaskController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date'    => 'nullable|date',
-            'order'       => 'nullable|integer|min:0',
+            'order'       => 'nullable|integer|min:1',
         ]);
 
-        $validated['order'] ??= 0;
+        $validated['order'] = $this->nextAvailableOrder(Task::class, $validated['order'] ?? 1);
 
         Task::create($validated);
 
@@ -56,13 +59,17 @@ class TaskController extends Controller
             'description'  => 'nullable|string',
             'due_date'     => 'nullable|date',
             'is_completed' => 'boolean',
-            'order'        => 'nullable|integer|min:0',
+            'order'        => 'nullable|integer|min:1',
         ]);
 
         if (!empty($validated['is_completed']) && !$task->is_completed) {
             $validated['completed_at'] = now();
         } elseif (isset($validated['is_completed']) && !$validated['is_completed']) {
             $validated['completed_at'] = null;
+        }
+
+        if (isset($validated['order'])) {
+            $validated['order'] = $this->nextAvailableOrder(Task::class, $validated['order'], $task->id);
         }
 
         $task->update($validated);

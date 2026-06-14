@@ -1,11 +1,11 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import WysiwygEditor from '@/Components/WysiwygEditor';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ExperienceCreate() {
     const { data, setData, post, processing, errors } = useForm({
         title: '', company: '', summary: '', location: '', start_date: '', end_date: '',
-        is_current: false, description: '', type: 'work', order: 0,
+        is_current: false, description: '', type: 'work', order: 1,
     });
 
     const submit = (e) => {
@@ -70,7 +70,7 @@ export default function ExperienceCreate() {
                             </div>
                             <div>
                                 <label className="form-label fw-semibold small">Order</label>
-                                <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 0)} />
+                                <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 1)} />
                             </div>
                         </div>
                         <div className="card-footer bg-transparent d-flex gap-2">

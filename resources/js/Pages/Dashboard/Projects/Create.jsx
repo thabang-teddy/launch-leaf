@@ -1,9 +1,9 @@
-import DashboardLayout from '@/Layouts/DashboardLayout';
+﻿import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ProjectCreate() {
     const { data, setData, post, processing, errors } = useForm({
-        title: '', description: '', content: '', github_url: '', image: null, order: 0, is_active: true,
+        title: '', description: '', content: '', github_url: '', image: null, order: 1, is_active: true,
     });
 
     const submit = (e) => {
@@ -57,7 +57,7 @@ export default function ProjectCreate() {
                             <div className="row g-3">
                                 <div className="col-sm-6">
                                     <label className="form-label fw-semibold small">Order</label>
-                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 0)} />
+                                    <input type="number" className="form-control" value={data.order} onChange={e => setData('order', parseInt(e.target.value) || 1)} />
                                 </div>
                                 <div className="col-sm-6 d-flex align-items-end">
                                     <div className="form-check">
