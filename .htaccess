@@ -1,0 +1,17 @@
+# /home/thabangt/public_html/launch-leaf/.htaccess
+# Security only — blocks direct HTTP access to the git root.
+
+Options -Indexes
+
+# Block access to git internals and Claude config
+<FilesMatch "^(CLAUDE\.md)$">
+    Order deny,allow
+    Deny from all
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to .git and .claude directories
+    RewriteRule ^(\.git|\.claude)(/.*)?$ - [F,L]
+</IfModule>

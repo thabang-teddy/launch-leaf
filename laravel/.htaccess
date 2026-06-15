@@ -1,4 +1,4 @@
-# /home/thabangt/public_html/launch-leaf/.htaccess
+# /home/thabangt/public_html/launch-leaf/laravel/.htaccess
 # Security only — blocks direct access to sensitive files and directories.
 
 Options -Indexes

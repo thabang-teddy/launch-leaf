@@ -11,9 +11,9 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-    # Serve real static assets from launch-leaf/public (css, js, images, etc.)
-    RewriteCond %{DOCUMENT_ROOT}/launch-leaf/public%{REQUEST_URI} -f
-    RewriteRule ^(.+)$ launch-leaf/public/$1 [L]
+    # Serve real static assets from launch-leaf/laravel/public (css, js, images, etc.)
+    RewriteCond %{DOCUMENT_ROOT}/launch-leaf/laravel/public%{REQUEST_URI} -f
+    RewriteRule ^(.+)$ launch-leaf/laravel/public/$1 [L]
 
     # Remove trailing slashes
     RewriteCond %{REQUEST_FILENAME} !-d
