@@ -35,7 +35,7 @@ class ProjectController extends Controller
             'description' => 'nullable|string',
             'content'     => 'nullable|string|max:10000',
             'github_url'  => 'required|url|max:255',
-            'image'       => 'nullable|image|max:2048',
+            'image'       => 'nullable|file|extensions:jpg,jpeg,png,webp,gif|max:2048',
             'order'       => 'nullable|integer|min:1',
             'is_active'   => 'boolean',
         ]);
@@ -70,7 +70,7 @@ class ProjectController extends Controller
             'description' => 'nullable|string',
             'content'     => 'nullable|string|max:10000',
             'github_url'  => 'required|url|max:255',
-            'image'       => 'nullable|image|max:2048',
+            'image'       => 'nullable|file|extensions:jpg,jpeg,png,webp,gif|max:2048',
             'order'       => 'nullable|integer|min:1',
             'is_active'   => 'boolean',
         ]);

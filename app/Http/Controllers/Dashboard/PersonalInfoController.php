@@ -29,7 +29,7 @@ class PersonalInfoController extends Controller
             'phone'        => 'nullable|string|max:50',
             'location'     => 'nullable|string|max:255',
             'website_url'  => 'nullable|url|max:255',
-            'avatar'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'avatar'       => 'nullable|file|extensions:jpg,jpeg,png,webp|max:2048',
             'linkedin_url' => 'nullable|url|max:255',
             'github_url'   => 'nullable|url|max:255',
             'twitter_url'  => 'nullable|url|max:255',
