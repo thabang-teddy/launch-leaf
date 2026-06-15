@@ -9,41 +9,44 @@ Personal portfolio + admin dashboard. The public site exposes portfolio, GitHub 
 | Backend | Laravel 10 | Routing, Eloquent ORM, Mail |
 | Frontend | React 18 + Inertia.js | Server-driven SPA — no separate JSON API |
 | CSS | Bootstrap 5 | via npm |
-| DB | SQLite | `database/database.sqlite` |
+| DB | SQLite | `laravel/database/database.sqlite` |
 | Auth | Laravel Breeze (session-based) | Dashboard only; public site is unauthenticated |
 | GitHub data | GitHub REST API v3 | Proxied through Laravel, results persisted in DB |
-| Build | Vite | `vite.config.js` |
+| Build | Vite | `laravel/vite.config.js` |
 
 ## Project Structure
 
 ```
-launch-leaf/
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/
-│   │   │   ├── Dashboard/        # Auth-protected CRUD controllers
-│   │   │   └── Frontend/         # Public read-only controllers
-│   │   └── Middleware/
-│   ├── Models/                   # Eloquent models
-│   ├── Services/
-│   │   └── GitHubService.php     # GitHub API proxy + DB cache
-│   └── Mail/                     # Mailables (contact replies)
-├── database/
-│   ├── migrations/
-│   └── database.sqlite
-├── resources/
-│   └── js/
-│       ├── Pages/
-│       │   ├── Frontend/         # Public React pages
-│       │   └── Dashboard/        # Admin React pages
-│       ├── Components/           # Shared React components
-│       └── Layouts/
-│           ├── FrontendLayout.jsx
-│           └── DashboardLayout.jsx
-├── routes/
-│   ├── web.php                   # All Inertia routes
-│   └── auth.php
-└── vite.config.js
+launch-leaf/                      # Git root
+├── .claude/                      # Claude project config
+├── CLAUDE.md
+└── laravel/                      # Laravel project root (run all commands from here)
+    ├── app/
+    │   ├── Http/
+    │   │   ├── Controllers/
+    │   │   │   ├── Dashboard/    # Auth-protected CRUD controllers
+    │   │   │   └── Frontend/     # Public read-only controllers
+    │   │   └── Middleware/
+    │   ├── Models/               # Eloquent models
+    │   ├── Services/
+    │   │   └── GitHubService.php # GitHub API proxy + DB cache
+    │   └── Mail/                 # Mailables (contact replies)
+    ├── database/
+    │   ├── migrations/
+    │   └── database.sqlite
+    ├── resources/
+    │   └── js/
+    │       ├── Pages/
+    │       │   ├── Frontend/     # Public React pages
+    │       │   └── Dashboard/    # Admin React pages
+    │       ├── Components/       # Shared React components
+    │       └── Layouts/
+    │           ├── FrontendLayout.jsx
+    │           └── DashboardLayout.jsx
+    ├── routes/
+    │   ├── web.php               # All Inertia routes
+    │   └── auth.php
+    └── vite.config.js
 ```
 
 ## Frontend Routes (public)
@@ -82,7 +85,11 @@ launch-leaf/
 
 ## Build & Dev Commands
 
+All commands must be run from the `laravel/` subdirectory.
+
 ```bash
+cd laravel
+
 # Install
 composer install
 npm install
