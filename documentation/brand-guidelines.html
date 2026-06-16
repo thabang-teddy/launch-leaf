@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LaunchLeaf — Brand Guidelines v1.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #1B2B5E;
+      --orange: #F05830;
+      --peach:  #F8956E;
+      --ice:    #EEF1F8;
+      --gray:   #888780;
+      --text:   #1A1A1A;
+      --muted:  #5F5E5A;
+      --subtle: #B4B2A9;
+      --border: #D3D1C7;
+      --bg:     #FFFFFF;
+      --surface:#F7F6F3;
+    }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.6;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 48px 48px 80px;
+    }
+
+    /* ── helpers ── */
+    .label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--subtle);
+      margin-bottom: 14px;
+    }
+
+    hr {
+      border: none;
+      border-top: 0.5px solid var(--border);
+      margin: 40px 0;
+    }
+
+    .section { padding: 8px 0 32px; }
+
+    .card {
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      background: var(--bg);
+    }
+
+    /* ── COVER ── */
+    .cover {
+      background: var(--navy);
+      border-radius: 16px;
+      padding: 56px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 48px;
+    }
+
+    .cover-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #8899CC;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .cover-title {
+      font-size: 52px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -1.5px;
+      line-height: 1;
+    }
+
+    .cover-title span { color: var(--orange); }
+
+    .cover-meta {
+      font-size: 12px;
+      color: #8899CC;
+      margin-top: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* ── LOGO MARK ── */
+    .logo-mark {
+      position: relative;
+      display: inline-block;
+    }
+
+    .mark-sq {
+      background: var(--navy);
+      border-radius: 14px;
+      position: absolute;
+      top: 0; left: 0;
+    }
+
+    .mark-cut {
+      background: var(--bg);
+      border-radius: 10px;
+      position: absolute;
+      top: 0; right: 0;
+    }
+
+    .mark-circle {
+      background: var(--orange);
+      border-radius: 50%;
+      position: absolute;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ── lockups grid ── */
+    .lockup-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 0;
+    }
+
+    .lockup-card {
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      background: var(--bg);
+    }
+
+    .lockup-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--subtle);
+    }
+
+    .wordmark {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+    }
+
+    .wordmark span { color: var(--orange); }
+
+    /* ── COLOURS ── */
+    .colour-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .swatch { border-radius: 10px; overflow: hidden; border: 0.5px solid var(--border); }
+
+    .swatch-fill { height: 80px; }
+
+    .swatch-info {
+      padding: 12px 14px;
+      border-top: 0.5px solid var(--border);
+    }
+
+    .swatch-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 3px;
+    }
+
+    .swatch-hex {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .swatch-role {
+      font-size: 10px;
+      color: var(--subtle);
+      margin-top: 5px;
+    }
+
+    /* ── COLOUR USAGE LIST ── */
+    .colour-rule {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── TYPOGRAPHY ── */
+    .type-sample-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .type-card {
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      background: var(--bg);
+    }
+
+    .type-alpha {
+      font-size: 48px;
+      font-weight: 900;
+      color: var(--navy);
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .type-alpha.mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+    }
+
+    .type-chars {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .type-chars.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+    .type-weights { margin-top: 16px; display: flex; flex-direction: column; gap: 5px; }
+
+    /* ── SCALE TABLE ── */
+    .scale-table {
+      width: 100%;
+      border: 0.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      border-collapse: collapse;
+    }
+
+    .scale-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .scale-table td {
+      padding: 12px 16px;
+      border-bottom: 0.5px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .scale-table tr:last-child td { border-bottom: none; }
+
+    .scale-name { font-size: 11px; color: var(--subtle); }
+    .scale-spec  { font-size: 11px; color: var(--subtle); font-family: 'JetBrains Mono', monospace; }
+
+    /* ── CLEAR SPACE ── */
+    .clear-space-demo {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 48px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .clear-space-inner {
+      border: 1.5px dashed var(--orange);
+      border-radius: 6px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .clear-space-label {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--orange);
+      white-space: nowrap;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── BACKGROUNDS ── */
+    .bg-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .bg-card {
+      border-radius: 10px;
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bg-label { font-size: 11px; font-weight: 600; }
+
+    .approved { font-size: 11px; font-weight: 600; color: #1D9E75; }
+    .avoid    { font-size: 11px; font-weight: 600; color: #E24B4A; }
+
+    /* ── DO / DON'T ── */
+    .dodo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .rule-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+
+    .rule-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .tick { color: #1D9E75; font-weight: 700; flex-shrink: 0; }
+    .cross { color: #E24B4A; font-weight: 700; flex-shrink: 0; }
+
+    .do-head   { font-size: 13px; font-weight: 700; color: #1D9E75; margin-bottom: 12px; }
+    .dont-head { font-size: 13px; font-weight: 700; color: #E24B4A; margin-bottom: 12px; }
+
+    /* ── SCALE ── */
+    .size-row {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 32px 28px;
+      display: flex;
+      align-items: flex-end;
+      gap: 36px;
+    }
+
+    .size-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .size-px { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .size-use { font-size: 10px; color: var(--subtle); }
+
+    /* ── VOICE ── */
+    .voice-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .voice-card {
+      border-left: 3px solid;
+      padding: 14px 18px;
+      border-radius: 0 10px 10px 0;
+      background: var(--surface);
+    }
+
+    .voice-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .voice-desc  { font-size: 12px; color: var(--muted); }
+
+    /* ── FOOTER ── */
+    .footer {
+      background: var(--navy);
+      border-radius: 12px;
+      padding: 20px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 48px;
+    }
+
+    .footer-brand {
+      font-size: 14px;
+      font-weight: 900;
+      color: white;
+      letter-spacing: -0.5px;
+    }
+
+    .footer-brand span { color: var(--orange); }
+    .footer-brand small { font-weight: 300; font-size: 11px; color: #8899CC; margin-left: 8px; }
+    .footer-copy { font-size: 11px; color: #8899CC; }
+
+    /* ── PRINT ── */
+    @media print {
+      body { font-size: 14px; }
+      .page { padding: 24px 32px 48px; max-width: 100%; }
+      .cover { padding: 40px 36px; }
+      .cover-title { font-size: 42px; }
+      hr { margin: 28px 0; }
+      .section { padding: 4px 0 24px; }
+    }
+
+    /* ── inline mark helpers ── */
+    .mk { position: relative; display: inline-block; flex-shrink: 0; }
+    .mk .sq  { background: var(--navy);  border-radius: 9px;  position: absolute; top: 0; left: 0; }
+    .mk .cut { background: var(--bg);    border-radius: 7px;  position: absolute; top: 0; right: 0; }
+    .mk .ci  { background: var(--orange);border-radius: 50%;  position: absolute; top: 0; right: 0; transform: translate(35%, -35%); }
+    /* inverted mark */
+    .mk.inv .sq  { background: white; }
+    .mk.inv .cut { background: var(--navy); }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- COVER -->
+  <div class="cover">
+    <div>
+      <p class="cover-eyebrow">Brand Guidelines</p>
+      <p class="cover-title">Launch<span>Leaf</span></p>
+      <p class="cover-meta">VERSION 1.0 &nbsp;·&nbsp; 2025</p>
+    </div>
+    <div class="mk" style="width:96px;height:96px;">
+      <div class="sq"  style="width:96px;height:96px;border-radius:14px;"></div>
+      <div class="cut" style="width:79px;height:79px;border-radius:10px;background:#1B2B5E;"></div>
+      <div class="ci"  style="width:28px;height:28px;"></div>
+    </div>
+  </div>
+
+  <!-- 01 LOGO -->
+  <div class="section">
+    <p class="label">01 — The logo</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:24px;">The mark combines a cut-out L shape with an orange circle carrying a leaf — representing launch momentum and organic growth. The wordmark always pairs "Launch" in navy with "Leaf" in orange.</p>
+
+    <div class="lockup-grid">
+      <!-- icon only -->
+      <div class="lockup-card">
+        <p class="lockup-label">Icon only</p>
+        <div class="mk" style="width:72px;height:72px;">
+          <div class="sq"  style="width:72px;height:72px;border-radius:11px;"></div>
+          <div class="cut" style="width:59px;height:59px;border-radius:8px;"></div>
+          <div class="ci"  style="width:24px;height:24px;"></div>
+        </div>
+      </div>
+      <!-- horizontal -->
+      <div class="lockup-card">
+        <p class="lockup-label">Horizontal</p>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="mk" style="width:48px;height:48px;">
+            <div class="sq"  style="width:48px;height:48px;border-radius:7px;"></div>
+            <div class="cut" style="width:39px;height:39px;border-radius:6px;"></div>
+            <div class="ci"  style="width:16px;height:16px;"></div>
+          </div>
+          <p class="wordmark" style="font-size:22px;">Launch<span>Leaf</span></p>
+        </div>
+      </div>
+      <!-- stacked -->
+      <div class="lockup-card">
+        <p class="lockup-label">Stacked</p>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div class="mk" style="width:56px;height:56px;">
+            <div class="sq"  style="width:56px;height:56px;border-radius:9px;"></div>
+            <div class="cut" style="width:46px;height:46px;border-radius:7px;"></div>
+            <div class="ci"  style="width:20px;height:20px;"></div>
+          </div>
+          <p class="wordmark">Launch<span>Leaf</span></p>
+          <p style="font-size:9px;letter-spacing:2px;color:var(--subtle);font-weight:700;text-transform:uppercase;">Portfolio &amp; Dashboard</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 02 COLOUR -->
+  <div class="section">
+    <p class="label">02 — Colour</p>
+
+    <div class="colour-grid" style="margin-bottom:20px;">
+      <div class="swatch">
+        <div class="swatch-fill" style="background:#1B2B5E;"></div>
+        <div class="swatch-info">
+          <p class="swatch-name">Navy</p>
+          <p class="swatch-hex">#1B2B5E</p>
+          <p class="swatch-hex">rgb(27, 43, 94)</p>
+          <p class="swatch-role">Primary brand</p>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:#F05830;"></div>
+        <div class="swatch-info">
+          <p class="swatch-name">Orange</p>
+          <p class="swatch-hex">#F05830</p>
+          <p class="swatch-hex">rgb(240, 88, 48)</p>
+          <p class="swatch-role">Accent / energy</p>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:#F8956E;"></div>
+        <div class="swatch-info">
+          <p class="swatch-name">Peach</p>
+          <p class="swatch-hex">#F8956E</p>
+          <p class="swatch-hex">rgb(248, 149, 110)</p>
+          <p class="swatch-role">Tint / hover states</p>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill" style="background:#EEF1F8;"></div>
+        <div class="swatch-info">
+          <p class="swatch-name">Ice</p>
+          <p class="swatch-hex">#EEF1F8</p>
+          <p class="swatch-hex">rgb(238, 241, 248)</p>
+          <p class="swatch-role">Background / surface</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;">Colour usage</p>
+    <div class="colour-rule"><div class="dot" style="background:#1B2B5E;"></div>Navy for headings, the icon mark, and primary UI chrome</div>
+    <div class="colour-rule"><div class="dot" style="background:#F05830;"></div>Orange for the word "Leaf", CTAs, links, and highlights</div>
+    <div class="colour-rule"><div class="dot" style="background:#F8956E;"></div>Peach for hover states and secondary accent areas</div>
+    <div class="colour-rule"><div class="dot" style="background:#EEF1F8;border:0.5px solid var(--border);"></div>Ice for page backgrounds, cards, and subtle surfaces</div>
+  </div>
+
+  <hr>
+
+  <!-- 03 TYPOGRAPHY -->
+  <div class="section">
+    <p class="label">03 — Typography</p>
+
+    <div class="type-sample-grid">
+      <div class="type-card">
+        <p class="label" style="margin-bottom:8px;">Primary — Inter</p>
+        <p class="type-alpha">Aa</p>
+        <p class="type-chars">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</p>
+        <p class="type-chars">a b c d e f g h i j k l m n o p q r s t u v w x y z</p>
+        <p class="type-chars">0 1 2 3 4 5 6 7 8 9 ! @ # $ % &amp; * ( )</p>
+        <div class="type-weights">
+          <p style="font-size:13px;font-weight:900;color:var(--navy);">900 Black — display &amp; logo</p>
+          <p style="font-size:13px;font-weight:700;color:var(--text);">700 Bold — headings</p>
+          <p style="font-size:13px;font-weight:600;color:var(--text);">600 Semibold — labels</p>
+          <p style="font-size:13px;font-weight:400;color:var(--muted);">400 Regular — body</p>
+          <p style="font-size:13px;font-weight:300;color:var(--subtle);">300 Light — captions</p>
+        </div>
+      </div>
+      <div class="type-card">
+        <p class="label" style="margin-bottom:8px;">Mono — JetBrains Mono</p>
+        <p class="type-alpha mono" style="font-family:'JetBrains Mono',monospace;">Aa</p>
+        <p class="type-chars mono">A B C D E F G H I J K L M</p>
+        <p class="type-chars mono">N O P Q R S T U V W X Y Z</p>
+        <p class="type-chars mono">0 1 2 3 4 5 6 7 8 9</p>
+        <div class="type-weights">
+          <p style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);">Used for code snippets,</p>
+          <p style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);">terminal output, filenames,</p>
+          <p style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--muted);">and technical labels only.</p>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;">Type scale</p>
+    <table class="scale-table">
+      <thead>
+        <tr>
+          <th style="width:90px;">Name</th>
+          <th>Sample</th>
+          <th style="width:130px;">Size / weight</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="scale-name">Display</td>
+          <td><p style="font-size:32px;font-weight:900;color:var(--navy);letter-spacing:-1px;line-height:1.1;">LaunchLeaf</p></td>
+          <td class="scale-spec">48px / 900</td>
+        </tr>
+        <tr>
+          <td class="scale-name">H1</td>
+          <td><p style="font-size:24px;font-weight:800;color:var(--text);line-height:1.2;">Portfolio &amp; Projects</p></td>
+          <td class="scale-spec">32px / 800</td>
+        </tr>
+        <tr>
+          <td class="scale-name">H2</td>
+          <td><p style="font-size:19px;font-weight:700;color:var(--text);">Featured work</p></td>
+          <td class="scale-spec">22px / 700</td>
+        </tr>
+        <tr>
+          <td class="scale-name">H3</td>
+          <td><p style="font-size:15px;font-weight:600;color:var(--text);">GitHub projects</p></td>
+          <td class="scale-spec">17px / 600</td>
+        </tr>
+        <tr>
+          <td class="scale-name">Body</td>
+          <td><p style="font-size:14px;color:var(--muted);line-height:1.65;">Building things on the web since 2018. Open to freelance.</p></td>
+          <td class="scale-spec">16px / 400</td>
+        </tr>
+        <tr>
+          <td class="scale-name">Caption</td>
+          <td><p style="font-size:11px;color:var(--subtle);letter-spacing:1.5px;font-weight:600;text-transform:uppercase;">React · Laravel · Inertia</p></td>
+          <td class="scale-spec">12px / 600 caps</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+
+  <!-- 04 CLEAR SPACE -->
+  <div class="section">
+    <p class="label">04 — Clear space</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Always maintain clear space equal to the diameter of the orange circle around the full logo mark. Never crowd it with other elements, text, or imagery.</p>
+    <div class="clear-space-demo">
+      <div class="clear-space-inner">
+        <p class="clear-space-label">← minimum clear space →</p>
+        <div class="mk" style="width:72px;height:72px;">
+          <div class="sq"  style="width:72px;height:72px;border-radius:11px;"></div>
+          <div class="cut" style="width:59px;height:59px;border-radius:8px;background:var(--surface);"></div>
+          <div class="ci"  style="width:24px;height:24px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 05 LOGO ON BACKGROUNDS -->
+  <div class="section">
+    <p class="label">05 — Logo on backgrounds</p>
+
+    <div class="bg-grid">
+      <div class="bg-card" style="background:white;border:0.5px solid var(--border);">
+        <div class="mk" style="width:52px;height:52px;">
+          <div class="sq"  style="width:52px;height:52px;border-radius:8px;"></div>
+          <div class="cut" style="width:42px;height:42px;border-radius:6px;background:white;"></div>
+          <div class="ci"  style="width:18px;height:18px;"></div>
+        </div>
+        <p class="bg-label" style="color:#444;">White</p>
+        <p class="approved">✓ Preferred</p>
+      </div>
+      <div class="bg-card" style="background:#EEF1F8;border:0.5px solid var(--border);">
+        <div class="mk" style="width:52px;height:52px;">
+          <div class="sq"  style="width:52px;height:52px;border-radius:8px;"></div>
+          <div class="cut" style="width:42px;height:42px;border-radius:6px;background:#EEF1F8;"></div>
+          <div class="ci"  style="width:18px;height:18px;"></div>
+        </div>
+        <p class="bg-label" style="color:#444;">Ice</p>
+        <p class="approved">✓ Preferred</p>
+      </div>
+      <div class="bg-card" style="background:#1B2B5E;">
+        <div class="mk inv" style="width:52px;height:52px;">
+          <div class="sq"  style="width:52px;height:52px;border-radius:8px;background:white;"></div>
+          <div class="cut" style="width:42px;height:42px;border-radius:6px;background:#1B2B5E;"></div>
+          <div class="ci"  style="width:18px;height:18px;"></div>
+        </div>
+        <p class="bg-label" style="color:white;">Navy</p>
+        <p style="font-size:11px;font-weight:600;color:#5DCAA5;">✓ Inverted</p>
+      </div>
+      <div class="bg-card" style="background:#F05830;">
+        <div style="width:52px;height:52px;border:2px dashed rgba(255,255,255,0.5);border-radius:8px;opacity:0.6;"></div>
+        <p class="bg-label" style="color:white;">Orange</p>
+        <p class="avoid">✗ Avoid</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 06 DO / DON'T -->
+  <div class="section">
+    <p class="label">06 — Do's and don'ts</p>
+    <div class="dodo-grid">
+      <div>
+        <p class="do-head">Do</p>
+        <ul class="rule-list">
+          <li class="rule-item"><span class="tick">✓</span>Use the logo on approved backgrounds only</li>
+          <li class="rule-item"><span class="tick">✓</span>Keep "Launch" in navy and "Leaf" in orange in the wordmark</li>
+          <li class="rule-item"><span class="tick">✓</span>Scale the mark proportionally at all times</li>
+          <li class="rule-item"><span class="tick">✓</span>Maintain minimum clear space around the mark</li>
+          <li class="rule-item"><span class="tick">✓</span>Use approved lockup variants (horizontal / stacked)</li>
+        </ul>
+      </div>
+      <div>
+        <p class="dont-head">Don't</p>
+        <ul class="rule-list">
+          <li class="rule-item"><span class="cross">✗</span>Recolour either element of the mark</li>
+          <li class="rule-item"><span class="cross">✗</span>Stretch, rotate, or skew the logo</li>
+          <li class="rule-item"><span class="cross">✗</span>Place on busy or low-contrast backgrounds</li>
+          <li class="rule-item"><span class="cross">✗</span>Add shadows, outlines, or decorative effects</li>
+          <li class="rule-item"><span class="cross">✗</span>Use below 28px — use the icon-only mark at small sizes</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 07 MINIMUM SIZES -->
+  <div class="section">
+    <p class="label">07 — Minimum sizes</p>
+    <div class="size-row">
+      <div class="size-item">
+        <div class="mk" style="width:96px;height:96px;">
+          <div class="sq"  style="width:96px;height:96px;border-radius:14px;"></div>
+          <div class="cut" style="width:79px;height:79px;border-radius:10px;background:var(--surface);"></div>
+          <div class="ci"  style="width:28px;height:28px;"></div>
+        </div>
+        <p class="size-px">96px</p>
+        <p class="size-use">Hero / splash</p>
+      </div>
+      <div class="size-item">
+        <div class="mk" style="width:64px;height:64px;">
+          <div class="sq"  style="width:64px;height:64px;border-radius:9px;"></div>
+          <div class="cut" style="width:52px;height:52px;border-radius:7px;background:var(--surface);"></div>
+          <div class="ci"  style="width:22px;height:22px;"></div>
+        </div>
+        <p class="size-px">64px</p>
+        <p class="size-use">Standard</p>
+      </div>
+      <div class="size-item">
+        <div class="mk" style="width:40px;height:40px;">
+          <div class="sq"  style="width:40px;height:40px;border-radius:6px;"></div>
+          <div class="cut" style="width:33px;height:33px;border-radius:4px;background:var(--surface);"></div>
+          <div class="ci"  style="width:14px;height:14px;"></div>
+        </div>
+        <p class="size-px">40px</p>
+        <p class="size-use">Navbar</p>
+      </div>
+      <div class="size-item">
+        <div class="mk" style="width:28px;height:28px;">
+          <div class="sq"  style="width:28px;height:28px;border-radius:4px;"></div>
+          <div class="cut" style="width:23px;height:23px;border-radius:3px;background:var(--surface);"></div>
+          <div class="ci"  style="width:10px;height:10px;"></div>
+        </div>
+        <p class="size-px">28px</p>
+        <p class="size-use">Minimum</p>
+      </div>
+      <div class="size-item">
+        <div class="mk" style="width:16px;height:16px;">
+          <div class="sq"  style="width:16px;height:16px;border-radius:3px;"></div>
+          <div class="ci"  style="width:7px;height:7px;"></div>
+        </div>
+        <p class="size-px">16px</p>
+        <p class="size-use">Favicon only</p>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 08 BRAND VOICE -->
+  <div class="section">
+    <p class="label">08 — Brand voice</p>
+    <div class="voice-grid">
+      <div class="voice-card" style="border-color:var(--navy);">
+        <p class="voice-title" style="color:var(--navy);">Confident</p>
+        <p class="voice-desc">Direct, precise, no filler words. Let the work speak for itself.</p>
+      </div>
+      <div class="voice-card" style="border-color:var(--orange);">
+        <p class="voice-title" style="color:var(--orange);">Grounded</p>
+        <p class="voice-desc">Human and approachable. Technical without being cold or distant.</p>
+      </div>
+      <div class="voice-card" style="border-color:var(--gray);">
+        <p class="voice-title" style="color:var(--text);">Forward</p>
+        <p class="voice-desc">Growth-oriented. Always building, always learning, always shipping.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <p class="footer-brand">Launch<span>Leaf</span><small>Brand Guidelines v1.0</small></p>
+    <p class="footer-copy">© 2025 LaunchLeaf</p>
+  </div>
+
+</div>
+</body>
+</html>
