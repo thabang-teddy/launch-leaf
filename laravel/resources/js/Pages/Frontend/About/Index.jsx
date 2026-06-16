@@ -34,9 +34,9 @@ export default function About({ info, skills = [] }) {
                     <div className="d-flex flex-column flex-md-row align-items-center gap-5 mb-5">
                         {/* Avatar */}
                         <div style={{ flexShrink: 0 }}>
-                            {info.avatar_path ? (
+                            {info.avatar_url ? (
                                 <img
-                                    src={`/storage/${info.avatar_path}`}
+                                    src={info.avatar_url}
                                     alt={info.name}
                                     style={{
                                         width: '200px',

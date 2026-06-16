@@ -21,7 +21,7 @@ export default function PersonalInfoEdit({ info }) {
 
     const fileInputRef = useRef(null);
     const [preview, setPreview] = useState(
-        info.avatar_path ? `/storage/${info.avatar_path}` : null
+        info.avatar_url ?? null
     );
 
     const handleAvatarChange = (e) => {

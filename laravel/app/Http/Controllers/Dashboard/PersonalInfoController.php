@@ -41,13 +41,12 @@ class PersonalInfoController extends Controller
 
         // Handle avatar file upload
         if ($request->hasFile('avatar')) {
-            // Delete old avatar if it exists
             if ($info->avatar_path) {
-                Storage::disk('public')->delete($info->avatar_path);
+                Storage::disk('uploads')->delete($info->avatar_path);
             }
             $file = $request->file('avatar');
             $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('avatars', $filename, 'public');
+            $file->storeAs('avatars', $filename, 'uploads');
             $validated['avatar_path'] = 'avatars/' . $filename;
         }
 

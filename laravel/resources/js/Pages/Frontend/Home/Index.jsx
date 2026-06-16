@@ -92,9 +92,9 @@ export default function Home({ personalInfo, skills }) {
 
                         {/* Photo column */}
                         <div className="col-lg-6 order-1 order-lg-2 text-center">
-                            {info?.avatar_path ? (
+                            {info?.avatar_url ? (
                                 <img
-                                    src={`/storage/${info.avatar_path}`}
+                                    src={info.avatar_url}
                                     alt={info.name}
                                     className="ll-hero-photo"
                                     style={{ height: '440px' }}
