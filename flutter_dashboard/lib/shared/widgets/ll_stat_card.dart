@@ -7,18 +7,16 @@ class LlStatCard extends StatelessWidget {
     super.key,
     required this.title,
     required this.value,
-    required this.icon,
     this.subtitle,
-    this.onTap,
     this.accentColor = AppColors.accent,
+    this.onTap,
   });
 
   final String title;
   final String value;
-  final IconData icon;
   final String? subtitle;
-  final VoidCallback? onTap;
   final Color accentColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -27,70 +25,55 @@ class LlStatCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.card,
-          borderRadius: BorderRadius.circular(8),
-          border: const Border(
-            left: BorderSide(color: AppColors.accent, width: 4),
-            top: BorderSide(color: AppColors.border),
-            right: BorderSide(color: AppColors.border),
-            bottom: BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            top: BorderSide(color: accentColor, width: 4),
+            left: const BorderSide(color: AppColors.border),
+            right: const BorderSide(color: AppColors.border),
+            bottom: const BorderSide(color: AppColors.border),
           ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(13),
-              blurRadius: 4,
+              blurRadius: 6,
               offset: const Offset(0, 2),
             ),
           ],
         ),
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: accentColor.withAlpha(26),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: accentColor, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      color: AppColors.muted,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    value,
-                    style: const TextStyle(
-                      color: AppColors.dark,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitle!,
-                      style: const TextStyle(
-                        color: AppColors.muted,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ],
+            Text(
+              title.toUpperCase(),
+              style: const TextStyle(
+                color: AppColors.muted,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
               ),
             ),
-            if (onTap != null)
-              const Icon(Icons.chevron_right, color: AppColors.muted, size: 20),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                color: AppColors.dark,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                height: 1,
+              ),
+            ),
+            if (subtitle != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  color: accentColor,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ],
         ),
       ),

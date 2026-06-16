@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/contact_model.dart';
 import '../../providers/contact_provider.dart';
+import '../../shared/widgets/app_drawer.dart';
+import '../../shared/widgets/ll_app_bar.dart';
 
 class ContactScreen extends StatefulWidget {
   const ContactScreen({super.key});
@@ -49,7 +51,8 @@ class _ContactScreenState extends State<ContactScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages')),
+      drawer: const AppDrawer(),
+      appBar: const LlAppBar(title: 'Messages'),
       body: Consumer<ContactProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {

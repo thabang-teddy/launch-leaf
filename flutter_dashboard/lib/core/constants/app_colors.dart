@@ -14,6 +14,20 @@ class AppColors {
   static const Color success = Color(0xFF27AE60);
   static const Color warning = Color(0xFFF39C12);
 
+  // Stat card accent palette (matches screenshot)
+  static const Color cardBlue = Color(0xFF6B8AF0);
+  static const Color cardPurple = Color(0xFF8B5CF6);
+  static const Color cardOrange = Color(0xFFF59E0B);
+  static const Color cardPink = Color(0xFFEC4899);
+  static const Color cardGreen = Color(0xFF10B981);
+  static const Color cardIndigo = Color(0xFF6366F1);
+  static const Color cardTeal = Color(0xFF14B8A6);
+  static const Color cardAmber = Color(0xFFF97316);
+
+  // Welcome card gradient
+  static const Color welcomeStart = Color(0xFF2DC9A2);
+  static const Color welcomeEnd = Color(0xFF1AA68A);
+
   static ThemeData get theme => ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(

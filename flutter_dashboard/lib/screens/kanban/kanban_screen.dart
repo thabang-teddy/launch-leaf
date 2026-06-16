@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/kanban_models.dart';
 import '../../providers/kanban_provider.dart';
+import '../../shared/widgets/app_drawer.dart';
+import '../../shell_screen.dart';
 
 class KanbanScreen extends StatefulWidget {
   const KanbanScreen({super.key});
@@ -23,12 +25,40 @@ class _KanbanScreenState extends State<KanbanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= kSidebarBreakpoint;
+
     return Scaffold(
+      drawer: isWide ? null : const AppDrawer(),
       appBar: AppBar(
-        title: const Text('Kanban'),
+        backgroundColor: Colors.white,
+        foregroundColor: AppColors.dark,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: isWide
+            ? null
+            : Builder(
+                builder: (ctx) => IconButton(
+                  icon: const Icon(Icons.menu, color: AppColors.dark),
+                  onPressed: () => Scaffold.of(ctx).openDrawer(),
+                ),
+              ),
+        title: const Text(
+          'Kanban',
+          style: TextStyle(
+            color: AppColors.dark,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: _buildBoardSelector(),
+          preferredSize: const Size.fromHeight(50),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(color: AppColors.border, height: 1),
+              _buildBoardSelector(),
+            ],
+          ),
         ),
       ),
       body: Consumer<KanbanProvider>(
@@ -81,31 +111,37 @@ class _KanbanScreenState extends State<KanbanScreen> {
       builder: (context, provider, _) {
         if (provider.boards.isEmpty) return const SizedBox.shrink();
         return Container(
-          color: AppColors.dark,
+          color: Colors.white,
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: AppColors.border)),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               const Text(
                 'Board:',
-                style: TextStyle(color: Colors.white70, fontSize: 13),
+                style: TextStyle(color: AppColors.muted, fontSize: 13),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     value: provider.selectedBoard?.id,
-                    dropdownColor: AppColors.dark,
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    dropdownColor: Colors.white,
+                    style: const TextStyle(
+                      color: AppColors.dark,
+                      fontSize: 14,
+                    ),
                     icon: const Icon(
                       Icons.keyboard_arrow_down,
-                      color: Colors.white,
+                      color: AppColors.dark,
                     ),
                     items: provider.boards.map((board) {
                       return DropdownMenuItem<int>(
                         value: board.id,
                         child: Text(
                           board.name,
-                          style: const TextStyle(color: Colors.white),
+                          style: const TextStyle(color: AppColors.dark),
                         ),
                       );
                     }).toList(),

@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/task_model.dart';
 import '../../providers/tasks_provider.dart';
+import '../../shared/widgets/app_drawer.dart';
+import '../../shared/widgets/ll_app_bar.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -49,7 +51,8 @@ class _TasksScreenState extends State<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tasks')),
+      drawer: const AppDrawer(),
+      appBar: const LlAppBar(title: 'Tasks'),
       body: Consumer<TasksProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {

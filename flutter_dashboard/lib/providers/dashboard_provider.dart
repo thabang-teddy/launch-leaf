@@ -8,17 +8,21 @@ class DashboardStats {
     this.notes = 0,
     this.tasksTotal = 0,
     this.tasksPending = 0,
+    this.tasksDone = 0,
     this.contactsTotal = 0,
     this.contactsPending = 0,
     this.kanbanBoards = 0,
+    this.kanbanCards = 0,
   });
 
   final int notes;
   final int tasksTotal;
   final int tasksPending;
+  final int tasksDone;
   final int contactsTotal;
   final int contactsPending;
   final int kanbanBoards;
+  final int kanbanCards;
 }
 
 class DashboardProvider extends ChangeNotifier {
@@ -38,16 +42,19 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await ApiClient.instance.get<Map<String, dynamic>>('/api/dashboard');
+      final response =
+          await ApiClient.instance.get<Map<String, dynamic>>('/api/dashboard');
       final data = response.data;
       if (data != null) {
         _stats = DashboardStats(
-          notes: data['notes'] as int? ?? 0,
+          notes: data['notes_count'] as int? ?? data['notes'] as int? ?? 0,
           tasksTotal: data['tasks_total'] as int? ?? 0,
           tasksPending: data['tasks_pending'] as int? ?? 0,
+          tasksDone: data['tasks_done'] as int? ?? 0,
           contactsTotal: data['contacts_total'] as int? ?? 0,
           contactsPending: data['contacts_pending'] as int? ?? 0,
           kanbanBoards: data['kanban_boards'] as int? ?? 0,
+          kanbanCards: data['kanban_cards'] as int? ?? 0,
         );
       }
     } on Exception catch (e) {

@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/note_model.dart';
 import '../../providers/notes_provider.dart';
+import '../../shared/widgets/app_drawer.dart';
+import '../../shared/widgets/ll_app_bar.dart';
 import '../../shared/widgets/ll_search_bar.dart';
 
 class NotesScreen extends StatefulWidget {
@@ -50,7 +52,8 @@ class _NotesScreenState extends State<NotesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notes')),
+      drawer: const AppDrawer(),
+      appBar: const LlAppBar(title: 'Notes'),
       body: Column(
         children: [
           Padding(
