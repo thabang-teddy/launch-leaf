@@ -95,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     _ErrorBanner(message: dashboard.errorMessage!),
                   _WelcomeCard(onSync: _handleSync, isSyncing: dashboard.isSyncing),
                   const SizedBox(height: 24),
-                  _QuickActions(),
+                  _QuickActions(stats: dashboard.stats),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -235,13 +235,17 @@ class _WelcomeCard extends StatelessWidget {
 // ── Quick actions ─────────────────────────────────────────────────────────────
 
 class _QuickActions extends StatelessWidget {
+  const _QuickActions({required this.stats});
+
+  final DashboardStats stats;
+
   @override
   Widget build(BuildContext context) {
-    const items = [
-      _ActionItem('New Note', Icons.note_add_outlined, '/notes'),
-      _ActionItem('New Task', Icons.add_task, '/tasks'),
-      _ActionItem('Messages', Icons.mark_email_read_outlined, '/contact'),
-      _ActionItem('Kanban', Icons.view_kanban_outlined, '/kanban'),
+    final items = [
+      _ActionItem('Notes', Icons.note_outlined, '/notes', stats.notes),
+      _ActionItem('Tasks', Icons.task_alt, '/tasks', stats.tasksPending),
+      _ActionItem('Messages', Icons.mark_email_read_outlined, '/contact', stats.contactsPending),
+      _ActionItem('Kanban', Icons.view_kanban_outlined, '/kanban', stats.kanbanBoards),
     ];
 
     return Column(
@@ -296,16 +300,32 @@ class _ActionCard extends StatelessWidget {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(item.icon, color: AppColors.accent, size: 20),
-            const SizedBox(width: 10),
-            Expanded(
+            const SizedBox(width: 8),
+            Text(
+              item.label,
+              style: const TextStyle(
+                color: AppColors.dark,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withAlpha(20),
+                borderRadius: BorderRadius.circular(20),
+              ),
               child: Text(
-                item.label,
+                '${item.count}',
                 style: const TextStyle(
-                  color: AppColors.dark,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.accent,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -317,10 +337,11 @@ class _ActionCard extends StatelessWidget {
 }
 
 class _ActionItem {
-  const _ActionItem(this.label, this.icon, this.route);
+  const _ActionItem(this.label, this.icon, this.route, this.count);
   final String label;
   final IconData icon;
   final String route;
+  final int count;
 }
 
 // ── Error banner ──────────────────────────────────────────────────────────────
