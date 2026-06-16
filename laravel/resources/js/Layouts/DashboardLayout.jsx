@@ -36,6 +36,7 @@ function Ico({ name, size = 16, color = 'currentColor' }) {
         layers:    <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
         menu:      <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>,
         x:         <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
+        download:  <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></>,
     };
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -61,6 +62,7 @@ const NAV = [
     { label: 'Kanban',       href: 'dashboard.kanban.index',    icon: 'kanban',    match: 'dashboard.kanban*' },
     { label: 'Tasks',        href: 'dashboard.tasks.index',     icon: 'check',     match: 'dashboard.tasks.*' },
     { label: 'Contact',      href: 'dashboard.contact.index',   icon: 'mail',      match: 'dashboard.contact.*' },
+    { label: 'Downloads',    href: 'dashboard.downloads',       icon: 'download',  match: 'dashboard.downloads' },
     { label: 'My Account',   href: 'dashboard.user.show',       icon: 'user',      match: 'dashboard.user*' },
 ];
 

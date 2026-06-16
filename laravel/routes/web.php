@@ -32,6 +32,7 @@ use App\Http\Controllers\Dashboard\KanbanBoardController;
 use App\Http\Controllers\Dashboard\KanbanProjectController;
 use App\Http\Controllers\Dashboard\HomeController as DashHomeController;
 use App\Http\Controllers\Dashboard\UserController  as DashUserController;
+use App\Http\Controllers\Dashboard\DownloadController as DashDownloadController;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public frontend routes
@@ -159,6 +160,9 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     // Personal Info — single-record edit/update (no index/create/show/delete)
     Route::get('personal-info',         [DashPersonalInfoController::class, 'edit'])->name('personal-info');
     Route::put('personal-info',         [DashPersonalInfoController::class, 'update'])->name('personal-info.update');
+
+    // App downloads
+    Route::get('downloads', [DashDownloadController::class, 'index'])->name('downloads');
 
     // Contact messages
     Route::get('contact',               [DashContactController::class, 'index'])->name('contact.index');
