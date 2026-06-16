@@ -111,8 +111,8 @@ class _KanbanScreenState extends State<KanbanScreen> {
       builder: (context, provider, _) {
         if (provider.boards.isEmpty) return const SizedBox.shrink();
         return Container(
-          color: Colors.white,
           decoration: const BoxDecoration(
+            color: Colors.white,
             border: Border(bottom: BorderSide(color: AppColors.border)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
