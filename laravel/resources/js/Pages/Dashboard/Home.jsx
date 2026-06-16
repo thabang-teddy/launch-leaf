@@ -1,6 +1,6 @@
 import DashboardLayout from '@/Layouts/DashboardLayout';
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // ─── Design tokens (same palette as DashboardLayout) ─────────────────────────
 const C = {
@@ -89,6 +89,14 @@ function SectionCard({ title, children }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function DashboardHome({ stats = {} }) {
     const s = stats;
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     const statCards = [
         { label: 'GitHub Projects', value: s.projects   ?? 0, href: 'dashboard.projects.index',  accent: '#2DC9A2' },
@@ -141,8 +149,10 @@ export default function DashboardHome({ stats = {} }) {
             {/* Welcome banner */}
             <div style={{
                 background: `linear-gradient(135deg, #2DC9A2 0%, #1BA882 100%)`,
-                borderRadius: 14, padding: '22px 28px', marginBottom: 24,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                borderRadius: 14, padding: isMobile ? '18px 18px' : '22px 28px', marginBottom: 24,
+                display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+                alignItems: isMobile ? 'flex-start' : 'center',
+                justifyContent: 'space-between', gap: isMobile ? 14 : 0,
                 boxShadow: '0 4px 16px rgba(45,201,162,0.30)',
             }}>
                 <div>
@@ -153,7 +163,7 @@ export default function DashboardHome({ stats = {} }) {
                         Here's an overview of your portfolio content.
                     </p>
                 </div>
-                <div style={{ display: 'flex', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                     <Link href={route('dashboard.projects.create')} style={{
                         background: 'rgba(255,255,255,0.2)', color: 'white',
                         padding: '8px 18px', borderRadius: 8, fontSize: 13,
@@ -172,16 +182,16 @@ export default function DashboardHome({ stats = {} }) {
                 </div>
             </div>
 
-            {/* Stats grid */}
+            {/* Stats grid — 2 cols on mobile, 4 on desktop */}
             <div style={{
                 display: 'grid', gap: 14, marginBottom: 24,
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
             }}>
                 {statCards.map(c => <StatCard key={c.label} {...c} />)}
             </div>
 
-            {/* Bottom row: quick actions + all sections */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+            {/* Bottom row: quick actions + all sections — stacked on mobile */}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 14 }}>
 
                 {/* Quick actions */}
                 <SectionCard title="Quick Actions">

@@ -30,10 +30,12 @@ function Ico({ name, size = 16, color = 'currentColor' }) {
         check:     <><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>,
         mail:      <><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>,
         bell:      <><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></>,
-        logout:    <><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
+        logout:    <><path d="M9 21H5a2 2 0 0 0-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>,
         search:    <><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></>,
         globe:     <><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></>,
         layers:    <><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></>,
+        menu:      <><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></>,
+        x:         <><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></>,
     };
     return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
@@ -63,7 +65,7 @@ const NAV = [
 ];
 
 // ─── Hover-aware nav link ─────────────────────────────────────────────────────
-function NavLink({ item }) {
+function NavLink({ item, onClick }) {
     const active = route().current(item.match);
     const [hovered, setHovered] = useState(false);
 
@@ -74,6 +76,7 @@ function NavLink({ item }) {
     return (
         <Link
             href={route(item.href)}
+            onClick={onClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
@@ -112,8 +115,23 @@ function IconBtn({ icon, onClick, title }) {
 // ─── Layout ───────────────────────────────────────────────────────────────────
 export default function DashboardLayout({ header, children }) {
     const { auth, flash } = usePage().props;
-    const [alert, setAlert]   = useState(null);
-    const [search, setSearch] = useState('');
+    const { url }         = usePage();
+    const [alert, setAlert]       = useState(null);
+    const [search, setSearch]     = useState('');
+    const [isMobile, setIsMobile] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    // Close sidebar on navigation
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [url]);
 
     useEffect(() => {
         if (flash?.success)      setAlert({ type: 'success', msg: flash.success });
@@ -124,21 +142,49 @@ export default function DashboardLayout({ header, children }) {
     const userName = auth?.user?.name ?? auth?.user?.email ?? 'Admin';
     const initial  = userName.charAt(0).toUpperCase();
 
+    const sidebarStyle = isMobile
+        ? {
+            position: 'fixed', top: 0, left: sidebarOpen ? 0 : -260,
+            width: 245, height: '100vh', zIndex: 1050,
+            transition: 'left 260ms ease',
+            background: C.sidebar, borderRight: `1px solid ${C.border}`,
+            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            boxShadow: sidebarOpen ? '4px 0 24px rgba(0,0,0,0.18)' : 'none',
+        }
+        : {
+            width: 245, flexShrink: 0, background: C.sidebar,
+            borderRight: `1px solid ${C.border}`, display: 'flex',
+            flexDirection: 'column', overflow: 'hidden',
+        };
+
     return (
         <div style={{
             display: 'flex', height: '100vh', overflow: 'hidden',
             background: C.bg, fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
             fontSize: 14,
         }}>
+            {/* Global mobile styles */}
+            <style>{`
+                @media (max-width: 767px) {
+                    .dash-main table.table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+                }
+            `}</style>
+
+            {/* ── Mobile backdrop ─────────────────────────────────────── */}
+            {isMobile && sidebarOpen && (
+                <div
+                    onClick={() => setSidebarOpen(false)}
+                    style={{
+                        position: 'fixed', inset: 0, zIndex: 1040,
+                        background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)',
+                    }}
+                />
+            )}
 
             {/* ── Sidebar ────────────────────────────────────────────── */}
-            <aside style={{
-                width: 245, flexShrink: 0, background: C.sidebar,
-                borderRight: `1px solid ${C.border}`, display: 'flex',
-                flexDirection: 'column', overflow: 'hidden',
-            }}>
+            <aside style={sidebarStyle}>
                 {/* Brand */}
-                <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
+                <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Link href={route('dashboard.home')} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
                         <div style={{
                             width: 34, height: 34, borderRadius: 9, flexShrink: 0,
@@ -152,11 +198,26 @@ export default function DashboardLayout({ header, children }) {
                             LaunchLeaf
                         </span>
                     </Link>
+                    {isMobile && (
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: C.muted, display: 'flex' }}
+                            aria-label="Close menu"
+                        >
+                            <Ico name="x" size={18} color={C.muted} />
+                        </button>
+                    )}
                 </div>
 
                 {/* Navigation */}
                 <nav style={{ flex: 1, padding: '10px 8px', overflowY: 'auto' }}>
-                    {NAV.map(item => <NavLink key={item.href} item={item} />)}
+                    {NAV.map(item => (
+                        <NavLink
+                            key={item.href}
+                            item={item}
+                            onClick={isMobile ? () => setSidebarOpen(false) : undefined}
+                        />
+                    ))}
                 </nav>
 
                 {/* CTA card */}
@@ -188,41 +249,59 @@ export default function DashboardLayout({ header, children }) {
                 {/* Top bar */}
                 <header style={{
                     background: 'white', borderBottom: `1px solid ${C.border}`,
-                    padding: '0 24px', height: 58, display: 'flex',
-                    alignItems: 'center', gap: 14, flexShrink: 0,
+                    padding: isMobile ? '0 12px' : '0 24px',
+                    height: 58, display: 'flex',
+                    alignItems: 'center', gap: isMobile ? 8 : 14, flexShrink: 0,
                 }}>
+                    {/* Hamburger (mobile only) */}
+                    {isMobile && (
+                        <button
+                            onClick={() => setSidebarOpen(v => !v)}
+                            aria-label="Toggle menu"
+                            style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                padding: 6, borderRadius: 8, color: C.muted,
+                                display: 'flex', alignItems: 'center', flexShrink: 0,
+                            }}
+                        >
+                            <Ico name="menu" size={20} color={C.text} />
+                        </button>
+                    )}
+
                     {/* Page title */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                         {header && (
-                            <h1 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <h1 style={{ margin: 0, fontSize: isMobile ? 14 : 15, fontWeight: 600, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                 {header}
                             </h1>
                         )}
                     </div>
 
-                    {/* Search */}
-                    <div style={{ position: 'relative', width: 220 }}>
-                        <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                            <Ico name="search" size={13} color={C.muted} />
-                        </span>
-                        <input
-                            value={search}
-                            onChange={e => setSearch(e.target.value)}
-                            placeholder="Search anything…"
-                            style={{
-                                width: '100%', padding: '7px 10px 7px 30px',
-                                border: `1px solid ${C.border}`, borderRadius: 8,
-                                fontSize: 13, outline: 'none', background: '#f7f7f7',
-                                color: C.text, boxSizing: 'border-box',
-                            }}
-                        />
-                    </div>
+                    {/* Search (desktop only) */}
+                    {!isMobile && (
+                        <div style={{ position: 'relative', width: 220 }}>
+                            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                                <Ico name="search" size={13} color={C.muted} />
+                            </span>
+                            <input
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                placeholder="Search anything…"
+                                style={{
+                                    width: '100%', padding: '7px 10px 7px 30px',
+                                    border: `1px solid ${C.border}`, borderRadius: 8,
+                                    fontSize: 13, outline: 'none', background: '#f7f7f7',
+                                    color: C.text, boxSizing: 'border-box',
+                                }}
+                            />
+                        </div>
+                    )}
 
-                    {/* Bell */}
-                    <IconBtn icon="bell" title="Notifications" />
+                    {/* Bell (desktop only) */}
+                    {!isMobile && <IconBtn icon="bell" title="Notifications" />}
 
-                    {/* Divider */}
-                    <div style={{ width: 1, height: 22, background: C.border }} />
+                    {/* Divider (desktop only) */}
+                    {!isMobile && <div style={{ width: 1, height: 22, background: C.border }} />}
 
                     {/* User */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -234,9 +313,11 @@ export default function DashboardLayout({ header, children }) {
                         }}>
                             {initial}
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: C.text, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {userName}
-                        </span>
+                        {!isMobile && (
+                            <span style={{ fontSize: 13, fontWeight: 600, color: C.text, maxWidth: 130, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {userName}
+                            </span>
+                        )}
                     </div>
 
                     {/* Logout */}
@@ -247,7 +328,7 @@ export default function DashboardLayout({ header, children }) {
                 </header>
 
                 {/* Scrollable content */}
-                <main style={{ flex: 1, overflowY: 'auto', padding: '24px 28px' }}>
+                <main className="dash-main" style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px 12px' : '24px 28px' }}>
                     {/* Flash alert */}
                     {alert && (
                         <div style={{

@@ -32,7 +32,7 @@ class TaskController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'due_date'    => 'nullable|date',
-            'order'       => 'nullable|integer|min:1',
+            'order'       => 'nullable|integer|min:0',
         ]);
 
         $validated['order'] = $this->nextAvailableOrder(Task::class, $validated['order'] ?? 1);
@@ -59,7 +59,7 @@ class TaskController extends Controller
             'description'  => 'nullable|string',
             'due_date'     => 'nullable|date',
             'is_completed' => 'boolean',
-            'order'        => 'nullable|integer|min:1',
+            'order'        => 'nullable|integer|min:0',
         ]);
 
         if (!empty($validated['is_completed']) && !$task->is_completed) {
