@@ -3,9 +3,13 @@ import 'package:flutter/material.dart';
 class AppColors {
   AppColors._();
 
-  static const Color accent = Color(0xFFE74C3C);
-  static const Color accentDark = Color(0xFFC0392B);
-  static const Color dark = Color(0xFF1A1A2E);
+  static const Color accent = Color(0xFFF05830);
+  static const Color accentDark = Color(0xFFD4461F);
+  static const Color dark = Color(0xFF1B2B5E);
+  static const Color navy = Color(0xFF1B2B5E);
+  static const Color orange = Color(0xFFF05830);
+  static const Color peach = Color(0xFFF8956E);
+  static const Color ice = Color(0xFFEEF1F8);
   static const Color text = Color(0xFF444444);
   static const Color muted = Color(0xFF888888);
   static const Color border = Color(0xFFEBEBEB);
@@ -25,8 +29,8 @@ class AppColors {
   static const Color cardAmber = Color(0xFFF97316);
 
   // Welcome card gradient
-  static const Color welcomeStart = Color(0xFF2DC9A2);
-  static const Color welcomeEnd = Color(0xFF1AA68A);
+  static const Color welcomeStart = Color(0xFF1B2B5E);
+  static const Color welcomeEnd = Color(0xFF2A407A);
 
   static ThemeData get theme => ThemeData(
         useMaterial3: true,

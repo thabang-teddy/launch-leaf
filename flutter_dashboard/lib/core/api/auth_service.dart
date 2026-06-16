@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/url_resolver.dart';
 import 'api_client.dart';
 
 class AuthService {
@@ -13,12 +14,17 @@ class AuthService {
     required String password,
   }) async {
     final cleanUrl = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final resolved = UrlResolver.resolve(cleanUrl);
 
     final dio = Dio(BaseOptions(
-      baseUrl: cleanUrl,
+      baseUrl: resolved.url,
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
-      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        if (resolved.hostHeader != null) 'Host': resolved.hostHeader!,
+      },
     ));
 
     final response = await dio.post<Map<String, dynamic>>(

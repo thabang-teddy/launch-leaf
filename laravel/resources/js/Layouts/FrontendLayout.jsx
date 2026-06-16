@@ -28,7 +28,8 @@ export default function FrontendLayout({ children }) {
                 <div className="container">
                     <div className="d-flex align-items-center justify-content-between">
                         {/* Brand */}
-                        <Link href={route('home')} className="ll-brand">
+                        <Link href={route('home')} className="ll-brand d-flex align-items-center gap-2">
+                            <img src="/images/logo_mark.png" alt="LaunchLeaf" width={32} height={32} style={{ borderRadius: 6, objectFit: 'contain' }} />
                             Launch<span>Leaf</span>
                         </Link>
 

@@ -4,7 +4,11 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'LaunchLeaf') }}</title>
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" sizes="128x128" href="/images/logo_mark.png">
+        <link rel="apple-touch-icon" sizes="256x256" href="/images/logo_mark_2x.png">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

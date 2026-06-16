@@ -186,14 +186,7 @@ export default function DashboardLayout({ header, children }) {
                 {/* Brand */}
                 <div style={{ padding: '18px 16px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <Link href={route('dashboard.home')} style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-                        <div style={{
-                            width: 34, height: 34, borderRadius: 9, flexShrink: 0,
-                            background: `linear-gradient(135deg, ${C.green} 0%, #c0392b 100%)`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: 'white', fontWeight: 800, fontSize: 17, letterSpacing: '-1px',
-                        }}>
-                            L
-                        </div>
+                        <img src="/images/logo_mark.png" alt="LaunchLeaf" style={{ width: 34, height: 34, borderRadius: 9, flexShrink: 0, objectFit: 'contain' }} />
                         <span style={{ fontWeight: 700, color: C.text, fontSize: 15.5, letterSpacing: '-0.3px' }}>
                             LaunchLeaf
                         </span>

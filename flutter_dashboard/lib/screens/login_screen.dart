@@ -1,9 +1,20 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../core/constants/app_colors.dart';
 import '../providers/auth_provider.dart';
+
+String get _defaultServerUrl {
+  if (!kIsWeb && Platform.isAndroid) {
+    // 10.0.2.2 is the Android emulator's alias for the host machine's localhost
+    return 'http://10.0.2.2:8000';
+  }
+  return 'http://127.0.0.1:8000';
+}
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,7 +25,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _urlController = TextEditingController(text: 'http://127.0.0.1:8000');
+  final _urlController = TextEditingController(text: _defaultServerUrl);
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -73,14 +84,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildHeader() {
     return Column(
       children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            color: AppColors.accent,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: const Icon(Icons.rocket_launch, color: Colors.white, size: 36),
+        Image.asset(
+          'assets/images/logo_mark.png',
+          width: 80,
+          height: 80,
         ),
         const SizedBox(height: 20),
         const Text(
@@ -154,9 +161,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _urlController,
                     keyboardType: TextInputType.url,
                     autocorrect: false,
-                    decoration: const InputDecoration(
-                      hintText: 'http://127.0.0.1:8000',
-                      prefixIcon: Icon(Icons.link, size: 20),
+                    decoration: InputDecoration(
+                      hintText: _defaultServerUrl,
+                      prefixIcon: const Icon(Icons.link, size: 20),
                     ),
                     validator: (v) {
                       if (v == null || v.trim().isEmpty) return 'Enter server URL';

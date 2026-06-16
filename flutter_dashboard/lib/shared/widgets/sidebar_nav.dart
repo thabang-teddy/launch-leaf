@@ -24,13 +24,11 @@ class SidebarNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    final email = context.watch<AuthProvider>().userEmail ?? '';
-    final initial = email.isNotEmpty ? email[0].toUpperCase() : 'U';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _Header(initial: initial),
+        const _Header(),
         const Divider(color: Colors.white12, height: 1, thickness: 1),
         const SizedBox(height: 8),
         for (final item in _items)
@@ -54,8 +52,7 @@ class SidebarNav extends StatelessWidget {
 // ── Header ────────────────────────────────────────────────────────────────────
 
 class _Header extends StatelessWidget {
-  const _Header({required this.initial});
-  final String initial;
+  const _Header();
 
   @override
   Widget build(BuildContext context) {
@@ -63,17 +60,10 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: AppColors.accent,
-            radius: 20,
-            child: Text(
-              initial,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
+          Image.asset(
+            'assets/images/logo_mark.png',
+            width: 40,
+            height: 40,
           ),
           const SizedBox(width: 12),
           const Column(

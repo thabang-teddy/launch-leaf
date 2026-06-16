@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/url_resolver.dart';
+
 class ApiClient {
   ApiClient._();
   static final ApiClient instance = ApiClient._();
@@ -22,10 +24,14 @@ class ApiClient {
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final prefs = await SharedPreferences.getInstance();
-        final baseUrl = prefs.getString('base_url') ?? 'http://127.0.0.1:8000';
+        final savedUrl = prefs.getString('base_url') ?? 'http://127.0.0.1:8000';
         final token = prefs.getString('auth_token');
+        final resolved = UrlResolver.resolve(savedUrl);
 
-        options.baseUrl = baseUrl;
+        options.baseUrl = resolved.url;
+        if (resolved.hostHeader != null) {
+          options.headers['Host'] = resolved.hostHeader!;
+        }
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }
