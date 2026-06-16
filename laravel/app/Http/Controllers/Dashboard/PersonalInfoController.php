@@ -7,6 +7,7 @@ use App\Models\PersonalInfo;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -44,7 +45,10 @@ class PersonalInfoController extends Controller
             if ($info->avatar_path) {
                 Storage::disk('public')->delete($info->avatar_path);
             }
-            $validated['avatar_path'] = $request->file('avatar')->store('avatars', 'public');
+            $file = $request->file('avatar');
+            $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('avatars', $filename, 'public');
+            $validated['avatar_path'] = 'avatars/' . $filename;
         }
 
         unset($validated['avatar']);
