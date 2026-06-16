@@ -66,10 +66,10 @@ class DashboardProvider extends ChangeNotifier {
   }
 
   Future<void> syncAll({
-    required VoidCallback onNotesRefresh,
-    required VoidCallback onTasksRefresh,
-    required VoidCallback onContactsRefresh,
-    required VoidCallback onKanbanRefresh,
+    required Future<void> Function() onNotesRefresh,
+    required Future<void> Function() onTasksRefresh,
+    required Future<void> Function() onContactsRefresh,
+    required Future<void> Function() onKanbanRefresh,
   }) async {
     _isSyncing = true;
     _errorMessage = null;
@@ -77,12 +77,14 @@ class DashboardProvider extends ChangeNotifier {
 
     try {
       await SyncService.instance.syncAll();
-      onNotesRefresh();
-      onTasksRefresh();
-      onContactsRefresh();
-      onKanbanRefresh();
+      await Future.wait([
+        onNotesRefresh(),
+        onTasksRefresh(),
+        onContactsRefresh(),
+        onKanbanRefresh(),
+      ]);
       await loadStats();
-    } on Exception catch (e) {
+    } catch (e) {
       _errorMessage = 'Sync failed: ${e.toString()}';
     }
 

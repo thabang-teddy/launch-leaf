@@ -18,10 +18,17 @@ class ContactProvider extends ChangeNotifier {
   int get totalCount => _contacts.length;
   int get pendingCount => pending.length;
 
+  /// Syncs from API then reads SQLite. Used when navigating to the screen.
   Future<void> loadContacts() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
+
+    try {
+      await SyncService.instance.syncContacts();
+    } catch (_) {
+      // Sync failed — will display whatever is already in local DB.
+    }
 
     try {
       _contacts = await DatabaseHelper.instance.getContacts();
@@ -31,6 +38,16 @@ class ContactProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Reads SQLite only — no API call. Used after an explicit sync completes.
+  Future<void> reloadFromLocal() async {
+    try {
+      _contacts = await DatabaseHelper.instance.getContacts();
+      notifyListeners();
+    } on Exception {
+      // ignore
+    }
   }
 
   Future<bool> replyContact(ContactModel contact, String reply) async {

@@ -36,10 +36,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final kanban = context.read<KanbanProvider>();
 
     await dashboard.syncAll(
-      onNotesRefresh: notes.loadNotes,
-      onTasksRefresh: tasks.loadTasks,
-      onContactsRefresh: contacts.loadContacts,
-      onKanbanRefresh: kanban.loadBoards,
+      onNotesRefresh: notes.reloadFromLocal,
+      onTasksRefresh: tasks.reloadFromLocal,
+      onContactsRefresh: contacts.reloadFromLocal,
+      onKanbanRefresh: kanban.reloadFromLocal,
     );
   }
 

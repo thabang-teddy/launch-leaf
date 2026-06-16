@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../core/api/sync_service.dart';
 import '../core/database/database_helper.dart';
 import '../models/kanban_models.dart';
 
@@ -17,10 +18,17 @@ class KanbanProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   int get boardCount => _boards.length;
 
+  /// Syncs from API then reads SQLite. Used when navigating to the screen.
   Future<void> loadBoards() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
+
+    try {
+      await SyncService.instance.syncKanban();
+    } catch (_) {
+      // Sync failed — will display whatever is already in local DB.
+    }
 
     try {
       _boards = await DatabaseHelper.instance.getBoards();
@@ -36,6 +44,22 @@ class KanbanProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Reads SQLite only — no API call. Used after an explicit sync completes.
+  Future<void> reloadFromLocal() async {
+    try {
+      _boards = await DatabaseHelper.instance.getBoards();
+      if (_boards.isNotEmpty) {
+        await selectBoard(_boards.first);
+      } else {
+        _selectedBoard = null;
+        _projects = [];
+      }
+      notifyListeners();
+    } on Exception {
+      // ignore
+    }
   }
 
   Future<void> selectBoard(KanbanBoard board) async {

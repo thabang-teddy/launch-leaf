@@ -16,10 +16,17 @@ class NotesProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   int get count => _notes.length;
 
+  /// Syncs from API then reads SQLite. Used when navigating to the screen.
   Future<void> loadNotes() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
+
+    try {
+      await SyncService.instance.syncNotes();
+    } catch (_) {
+      // Sync failed — will display whatever is already in local DB.
+    }
 
     try {
       _notes = await DatabaseHelper.instance.getNotes();
@@ -30,6 +37,17 @@ class NotesProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Reads SQLite only — no API call. Used after an explicit sync completes.
+  Future<void> reloadFromLocal() async {
+    try {
+      _notes = await DatabaseHelper.instance.getNotes();
+      _applySearch();
+      notifyListeners();
+    } on Exception {
+      // ignore
+    }
   }
 
   void search(String query) {

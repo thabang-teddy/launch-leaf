@@ -1,3 +1,10 @@
+int? _toInt(dynamic v) {
+  if (v == null) return null;
+  if (v is int) return v;
+  if (v is String) return int.tryParse(v);
+  return null;
+}
+
 class KanbanBoard {
   const KanbanBoard({
     required this.id,
@@ -59,11 +66,11 @@ class KanbanBoard {
 
   factory KanbanBoard.fromApi(Map<String, dynamic> json) => KanbanBoard(
         id: 0,
-        remoteId: json['id'] as int?,
+        remoteId: _toInt(json['id']),
         name: json['name'] as String? ?? '',
         description: json['description'] as String? ?? '',
         color: json['color'] as String? ?? '#1a1a2e',
-        orderIdx: json['order_idx'] as int? ?? 0,
+        orderIdx: _toInt(json['order_idx']) ?? 0,
         syncStatus: 'synced',
       );
 }
@@ -149,13 +156,13 @@ class KanbanProject {
   ) =>
       KanbanProject(
         id: 0,
-        remoteId: json['id'] as int?,
+        remoteId: _toInt(json['id']),
         boardId: localBoardId,
-        remoteBoardId: json['board_id'] as int?,
+        remoteBoardId: _toInt(json['board_id']),
         name: json['name'] as String? ?? '',
         description: json['description'] as String? ?? '',
         color: json['color'] as String? ?? '#e74c3c',
-        orderIdx: json['order_idx'] as int? ?? 0,
+        orderIdx: _toInt(json['order_idx']) ?? 0,
         syncStatus: 'synced',
       );
 }
@@ -235,12 +242,12 @@ class KanbanColumn {
   ) =>
       KanbanColumn(
         id: 0,
-        remoteId: json['id'] as int?,
+        remoteId: _toInt(json['id']),
         projectId: localProjectId,
-        remoteProjectId: json['project_id'] as int?,
+        remoteProjectId: _toInt(json['project_id']),
         title: json['title'] as String? ?? '',
         color: json['color'] as String? ?? '#1a1a2e',
-        orderIdx: json['order_idx'] as int? ?? 0,
+        orderIdx: _toInt(json['order_idx']) ?? 0,
         syncStatus: 'synced',
       );
 }
@@ -322,13 +329,13 @@ class KanbanCard {
   ) =>
       KanbanCard(
         id: 0,
-        remoteId: json['id'] as int?,
+        remoteId: _toInt(json['id']),
         columnId: localColumnId,
-        remoteColumnId: json['column_id'] as int?,
+        remoteColumnId: _toInt(json['column_id']),
         title: json['title'] as String? ?? '',
         description: json['description'] as String? ?? '',
         dueDate: json['due_date'] as String?,
-        orderIdx: json['order_idx'] as int? ?? 0,
+        orderIdx: _toInt(json['order_idx']) ?? 0,
         syncStatus: 'synced',
       );
 }

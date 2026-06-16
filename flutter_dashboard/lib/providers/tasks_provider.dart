@@ -16,10 +16,17 @@ class TasksProvider extends ChangeNotifier {
   int get totalCount => _tasks.length;
   int get pendingCount => pending.length;
 
+  /// Syncs from API then reads SQLite. Used when navigating to the screen.
   Future<void> loadTasks() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
+
+    try {
+      await SyncService.instance.syncTasks();
+    } catch (_) {
+      // Sync failed — will display whatever is already in local DB.
+    }
 
     try {
       _tasks = await DatabaseHelper.instance.getTasks();
@@ -29,6 +36,16 @@ class TasksProvider extends ChangeNotifier {
 
     _isLoading = false;
     notifyListeners();
+  }
+
+  /// Reads SQLite only — no API call. Used after an explicit sync completes.
+  Future<void> reloadFromLocal() async {
+    try {
+      _tasks = await DatabaseHelper.instance.getTasks();
+      notifyListeners();
+    } on Exception {
+      // ignore
+    }
   }
 
   Future<void> createTask({
