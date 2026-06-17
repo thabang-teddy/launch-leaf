@@ -67,6 +67,10 @@ const NAV = [
 ];
 
 // ─── Hover-aware nav link ─────────────────────────────────────────────────────
+function safeRoute(name) {
+    try { return route(name); } catch (_) { return '#'; }
+}
+
 function NavLink({ item, onClick }) {
     const active = route().current(item.match);
     const [hovered, setHovered] = useState(false);
@@ -77,7 +81,7 @@ function NavLink({ item, onClick }) {
 
     return (
         <Link
-            href={route(item.href)}
+            href={safeRoute(item.href)}
             onClick={onClick}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
