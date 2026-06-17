@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../core/api/api_client.dart';
 import '../core/api/sync_service.dart';
+import '../core/database/database_helper.dart';
 
 class DashboardStats {
   const DashboardStats({
@@ -57,8 +58,23 @@ class DashboardProvider extends ChangeNotifier {
           kanbanCards: data['kanban_cards'] as int? ?? 0,
         );
       }
-    } on Exception catch (e) {
-      _errorMessage = 'Failed to load dashboard: ${e.toString()}';
+    } on Exception {
+      // Server unreachable — derive counts from local SQLite instead.
+      try {
+        final local = await DatabaseHelper.instance.getLocalStats();
+        _stats = DashboardStats(
+          notes: local['notes'] ?? 0,
+          tasksTotal: local['tasks_total'] ?? 0,
+          tasksPending: local['tasks_pending'] ?? 0,
+          tasksDone: local['tasks_done'] ?? 0,
+          contactsTotal: local['contacts_total'] ?? 0,
+          contactsPending: local['contacts_pending'] ?? 0,
+          kanbanBoards: local['kanban_boards'] ?? 0,
+          kanbanCards: local['kanban_cards'] ?? 0,
+        );
+      } on Exception catch (e) {
+        _errorMessage = 'Failed to load dashboard: ${e.toString()}';
+      }
     }
 
     _isLoading = false;
@@ -77,16 +93,17 @@ class DashboardProvider extends ChangeNotifier {
 
     try {
       await SyncService.instance.syncAll();
-      await Future.wait([
-        onNotesRefresh(),
-        onTasksRefresh(),
-        onContactsRefresh(),
-        onKanbanRefresh(),
-      ]);
-      await loadStats();
-    } catch (e) {
-      _errorMessage = 'Sync failed: ${e.toString()}';
+    } catch (_) {
+      // Server unreachable — continue with local data; loadStats will fall back.
     }
+
+    await Future.wait([
+      onNotesRefresh(),
+      onTasksRefresh(),
+      onContactsRefresh(),
+      onKanbanRefresh(),
+    ]);
+    await loadStats();
 
     _isSyncing = false;
     notifyListeners();

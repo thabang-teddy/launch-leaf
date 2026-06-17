@@ -125,6 +125,37 @@ class DatabaseHelper {
     ''');
   }
 
+  // ─── Stats ────────────────────────────────────────────────────────────────
+
+  Future<Map<String, int>> getLocalStats() async {
+    final db = await database;
+
+    int count(List<Map<String, Object?>> rows) =>
+        (rows.first.values.first as int?) ?? 0;
+
+    final notes = count(await db.rawQuery('SELECT COUNT(*) FROM notes'));
+    final tasksTotal = count(await db.rawQuery('SELECT COUNT(*) FROM tasks'));
+    final tasksPending =
+        count(await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 0'));
+    final tasksDone =
+        count(await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 1'));
+    final contactsTotal = count(await db.rawQuery('SELECT COUNT(*) FROM contacts'));
+    const contactsPending = 0;
+    final kanbanBoards = count(await db.rawQuery('SELECT COUNT(*) FROM kanban_boards'));
+    final kanbanCards = count(await db.rawQuery('SELECT COUNT(*) FROM kanban_cards'));
+
+    return {
+      'notes': notes,
+      'tasks_total': tasksTotal,
+      'tasks_pending': tasksPending,
+      'tasks_done': tasksDone,
+      'contacts_total': contactsTotal,
+      'contacts_pending': contactsPending,
+      'kanban_boards': kanbanBoards,
+      'kanban_cards': kanbanCards,
+    };
+  }
+
   // ─── Notes ────────────────────────────────────────────────────────────────
 
   Future<List<NoteModel>> getNotes() async {
@@ -186,6 +217,22 @@ class DatabaseHelper {
   Future<List<TaskModel>> getTasks() async {
     final db = await database;
     final rows = await db.query('tasks', orderBy: 'order_idx ASC, created_at DESC');
+    return rows.map(TaskModel.fromMap).toList();
+  }
+
+  Future<List<TaskModel>> getPendingTasks() async {
+    final db = await database;
+    final rows = await db.query(
+      'tasks',
+      where: 'sync_status = ?',
+      whereArgs: ['pending'],
+    );
+    return rows.map(TaskModel.fromMap).toList();
+  }
+
+  Future<List<TaskModel>> getLocalOnlyTasks() async {
+    final db = await database;
+    final rows = await db.query('tasks', where: 'remote_id IS NULL');
     return rows.map(TaskModel.fromMap).toList();
   }
 

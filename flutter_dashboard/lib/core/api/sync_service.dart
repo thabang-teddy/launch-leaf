@@ -66,6 +66,9 @@ class SyncService {
   // ─── Tasks ──────────────────────────────────────────────────────────────
 
   Future<void> syncTasks() async {
+    // Preserve locally-created tasks that have never been pushed.
+    final localOnly = await _db.getLocalOnlyTasks();
+
     final response = await _api.get<dynamic>('/api/tasks');
     final data = response.data;
     if (data == null) return;
@@ -76,49 +79,130 @@ class SyncService {
       final task = TaskModel.fromApi(item as Map<String, dynamic>);
       await _db.insertTask(task);
     }
+
+    // Re-insert any tasks that only exist locally (pending, no remoteId).
+    for (final task in localOnly) {
+      await _db.insertTask(task);
+    }
+
+    // Push any pending local changes to the server now that we're online.
+    await pushPendingTasks();
+  }
+
+  Future<void> pushPendingTasks() async {
+    final pending = await _db.getPendingTasks();
+    for (final task in pending) {
+      try {
+        if (task.remoteId == null) {
+          // New task created offline — create on server.
+          final response = await _api.post<Map<String, dynamic>>(
+            '/api/tasks',
+            data: task.toApiPayload(),
+          );
+          final responseData = response.data!;
+          final created = TaskModel.fromApi(
+            responseData['data'] as Map<String, dynamic>? ?? responseData,
+          );
+          await _db.updateTask(created.copyWith(id: task.id, syncStatus: 'synced'));
+        } else {
+          // Task updated offline — push changes to server.
+          await _api.put<dynamic>(
+            '/api/tasks/${task.remoteId}',
+            data: task.toApiPayload(),
+          );
+          await _db.updateTask(task.copyWith(syncStatus: 'synced'));
+        }
+      } on Exception {
+        // Keep as pending — will retry on the next sync.
+      }
+    }
   }
 
   Future<TaskModel> createTask(TaskModel task) async {
-    final response = await _api.post<Map<String, dynamic>>(
-      '/api/tasks',
-      data: task.toApiPayload(),
-    );
-    final data = response.data!;
-    final created = TaskModel.fromApi(data['data'] as Map<String, dynamic>? ?? data);
-    final id = await _db.insertTask(created);
-    return created.copyWith(id: id);
+    // 1. Save locally immediately so the UI responds without a network round-trip.
+    final localId = await _db.insertTask(task.copyWith(syncStatus: 'pending'));
+    final localTask = task.copyWith(id: localId, syncStatus: 'pending');
+
+    // 2. Try to push to the server in the same call (fast when online).
+    try {
+      final response = await _api.post<Map<String, dynamic>>(
+        '/api/tasks',
+        data: task.toApiPayload(),
+      );
+      final data = response.data!;
+      final created = TaskModel.fromApi(data['data'] as Map<String, dynamic>? ?? data);
+      final synced = created.copyWith(id: localId, syncStatus: 'synced');
+      await _db.updateTask(synced);
+      return synced;
+    } on Exception {
+      // Offline or server error — return the local copy; will sync later.
+      return localTask;
+    }
   }
 
   Future<void> updateTask(TaskModel task) async {
+    // 1. Update locally immediately.
+    await _db.updateTask(task.copyWith(syncStatus: 'pending'));
+
     if (task.remoteId == null) return;
-    await _api.put<dynamic>(
-      '/api/tasks/${task.remoteId}',
-      data: task.toApiPayload(),
-    );
-    await _db.updateTask(task);
+
+    // 2. Try to push to the server.
+    try {
+      await _api.put<dynamic>(
+        '/api/tasks/${task.remoteId}',
+        data: task.toApiPayload(),
+      );
+      await _db.updateTask(task.copyWith(syncStatus: 'synced'));
+    } on Exception {
+      // Keep as pending — will sync later.
+    }
   }
 
   Future<TaskModel> toggleTask(TaskModel task) async {
-    if (task.remoteId == null) {
-      final toggled = task.copyWith(isCompleted: !task.isCompleted);
-      await _db.updateTask(toggled);
+    // 1. Toggle locally immediately.
+    final now = DateTime.now().toIso8601String();
+    final toggled = TaskModel(
+      id: task.id,
+      remoteId: task.remoteId,
+      title: task.title,
+      description: task.description,
+      isCompleted: !task.isCompleted,
+      completedAt: !task.isCompleted ? now : null,
+      dueDate: task.dueDate,
+      orderIdx: task.orderIdx,
+      createdAt: task.createdAt,
+      updatedAt: now,
+      syncStatus: 'pending',
+    );
+    await _db.updateTask(toggled);
+
+    if (task.remoteId == null) return toggled;
+
+    // 2. Try to push to the server.
+    try {
+      final response = await _api.patch<Map<String, dynamic>>(
+        '/api/tasks/${task.remoteId}/toggle',
+      );
+      final data = response.data!;
+      final updated = TaskModel.fromApi(data['data'] as Map<String, dynamic>? ?? data);
+      final synced = updated.copyWith(id: task.id, syncStatus: 'synced');
+      await _db.updateTask(synced);
+      return synced;
+    } on Exception {
       return toggled;
     }
-    final response = await _api.patch<Map<String, dynamic>>(
-      '/api/tasks/${task.remoteId}/toggle',
-    );
-    final data = response.data!;
-    final updated = TaskModel.fromApi(data['data'] as Map<String, dynamic>? ?? data);
-    final localUpdated = updated.copyWith(id: task.id);
-    await _db.updateTask(localUpdated);
-    return localUpdated;
   }
 
   Future<void> deleteTask(TaskModel task) async {
-    if (task.remoteId != null) {
-      await _api.delete<dynamic>('/api/tasks/${task.remoteId}');
-    }
+    // Delete locally immediately — best-effort delete on server.
     await _db.deleteTask(task.id);
+    if (task.remoteId != null) {
+      try {
+        await _api.delete<dynamic>('/api/tasks/${task.remoteId}');
+      } on Exception {
+        // Server delete failed; local record is already gone.
+      }
+    }
   }
 
   // ─── Contacts ───────────────────────────────────────────────────────────
@@ -134,17 +218,6 @@ class SyncService {
       final contact = ContactModel.fromApi(item as Map<String, dynamic>);
       await _db.insertContact(contact);
     }
-  }
-
-  Future<void> replyContact(ContactModel contact, String reply) async {
-    if (contact.remoteId == null) return;
-    await _api.post<dynamic>(
-      '/api/contacts/${contact.remoteId}/reply',
-      data: {'reply': reply},
-    );
-    final now = DateTime.now().toIso8601String();
-    final updated = contact.copyWith(reply: reply, repliedAt: now);
-    await _db.updateContact(updated);
   }
 
   Future<void> deleteContact(ContactModel contact) async {

@@ -56,23 +56,20 @@ class TasksProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    try {
-      final now = DateTime.now().toIso8601String();
-      final draft = TaskModel(
-        id: 0,
-        title: title,
-        description: description,
-        isCompleted: false,
-        dueDate: dueDate,
-        createdAt: now,
-        updatedAt: now,
-        syncStatus: 'pending',
-      );
-      final created = await SyncService.instance.createTask(draft);
-      _tasks.insert(0, created);
-    } on Exception catch (e) {
-      _errorMessage = 'Failed to create task: ${e.toString()}';
-    }
+    final now = DateTime.now().toIso8601String();
+    final draft = TaskModel(
+      id: 0,
+      title: title,
+      description: description,
+      isCompleted: false,
+      dueDate: dueDate,
+      createdAt: now,
+      updatedAt: now,
+      syncStatus: 'pending',
+    );
+    // createTask saves locally first and never throws — safe offline.
+    final created = await SyncService.instance.createTask(draft);
+    _tasks.insert(0, created);
 
     _isLoading = false;
     notifyListeners();
@@ -84,36 +81,40 @@ class TasksProvider extends ChangeNotifier {
     required String description,
     String? dueDate,
   }) async {
-    try {
-      final now = DateTime.now().toIso8601String();
-      final updated = task.copyWith(
-        title: title,
-        description: description,
-        dueDate: dueDate,
-        updatedAt: now,
-      );
-      await SyncService.instance.updateTask(updated);
-      final idx = _tasks.indexWhere((t) => t.id == task.id);
-      if (idx != -1) {
-        _tasks[idx] = updated;
-        notifyListeners();
-      }
-    } on Exception catch (e) {
-      _errorMessage = 'Failed to update task: ${e.toString()}';
+    final now = DateTime.now().toIso8601String();
+    final updated = task.copyWith(
+      title: title,
+      description: description,
+      dueDate: dueDate,
+      updatedAt: now,
+    );
+    // updateTask saves locally first and never throws — safe offline.
+    await SyncService.instance.updateTask(updated);
+    final idx = _tasks.indexWhere((t) => t.id == task.id);
+    if (idx != -1) {
+      _tasks[idx] = updated;
       notifyListeners();
     }
   }
 
   Future<void> toggleTask(TaskModel task) async {
+    // toggleTask saves locally first and never throws — safe offline.
+    final updated = await SyncService.instance.toggleTask(task);
+    final idx = _tasks.indexWhere((t) => t.id == task.id);
+    if (idx != -1) {
+      _tasks[idx] = updated;
+      notifyListeners();
+    }
+  }
+
+  /// Push any locally-pending tasks to the server. Call this when the user
+  /// manually triggers a sync or when connectivity is restored.
+  Future<void> pushPending() async {
     try {
-      final updated = await SyncService.instance.toggleTask(task);
-      final idx = _tasks.indexWhere((t) => t.id == task.id);
-      if (idx != -1) {
-        _tasks[idx] = updated;
-        notifyListeners();
-      }
+      await SyncService.instance.pushPendingTasks();
+      await reloadFromLocal();
     } on Exception catch (e) {
-      _errorMessage = 'Failed to toggle task: ${e.toString()}';
+      _errorMessage = 'Sync failed: ${e.toString()}';
       notifyListeners();
     }
   }

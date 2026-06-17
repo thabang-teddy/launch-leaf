@@ -118,20 +118,13 @@ class _ContactScreenState extends State<ContactScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      contact.name,
-                      style: const TextStyle(
-                        color: AppColors.dark,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  _buildStatusBadge(contact.isReplied),
-                ],
+              Text(
+                contact.name,
+                style: const TextStyle(
+                  color: AppColors.dark,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
@@ -167,28 +160,4 @@ class _ContactScreenState extends State<ContactScreen> {
     );
   }
 
-  Widget _buildStatusBadge(bool isReplied) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: isReplied
-            ? AppColors.success.withAlpha(26)
-            : AppColors.accent.withAlpha(26),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isReplied
-              ? AppColors.success.withAlpha(77)
-              : AppColors.accent.withAlpha(77),
-        ),
-      ),
-      child: Text(
-        isReplied ? 'Replied' : 'Pending',
-        style: TextStyle(
-          color: isReplied ? AppColors.success : AppColors.accent,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
 }

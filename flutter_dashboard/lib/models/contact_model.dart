@@ -6,8 +6,6 @@ class ContactModel {
     required this.email,
     required this.subject,
     required this.message,
-    this.reply,
-    this.repliedAt,
     required this.createdAt,
     required this.updatedAt,
     this.syncStatus = 'synced',
@@ -19,13 +17,9 @@ class ContactModel {
   final String email;
   final String subject;
   final String message;
-  final String? reply;
-  final String? repliedAt;
   final String createdAt;
   final String updatedAt;
   final String syncStatus;
-
-  bool get isReplied => repliedAt != null && repliedAt!.isNotEmpty;
 
   ContactModel copyWith({
     int? id,
@@ -34,8 +28,6 @@ class ContactModel {
     String? email,
     String? subject,
     String? message,
-    String? reply,
-    String? repliedAt,
     String? createdAt,
     String? updatedAt,
     String? syncStatus,
@@ -47,8 +39,6 @@ class ContactModel {
       email: email ?? this.email,
       subject: subject ?? this.subject,
       message: message ?? this.message,
-      reply: reply ?? this.reply,
-      repliedAt: repliedAt ?? this.repliedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncStatus: syncStatus ?? this.syncStatus,
@@ -63,8 +53,6 @@ class ContactModel {
       'email': email,
       'subject': subject,
       'message': message,
-      'reply': reply,
-      'replied_at': repliedAt,
       'created_at': createdAt,
       'updated_at': updatedAt,
       'sync_status': syncStatus,
@@ -79,8 +67,6 @@ class ContactModel {
       email: map['email'] as String? ?? '',
       subject: map['subject'] as String? ?? '',
       message: map['message'] as String? ?? '',
-      reply: map['reply'] as String?,
-      repliedAt: map['replied_at'] as String?,
       createdAt: map['created_at'] as String? ?? '',
       updatedAt: map['updated_at'] as String? ?? '',
       syncStatus: map['sync_status'] as String? ?? 'synced',
@@ -95,8 +81,6 @@ class ContactModel {
       email: json['email'] as String? ?? '',
       subject: json['subject'] as String? ?? '',
       message: json['message'] as String? ?? '',
-      reply: json['reply'] as String?,
-      repliedAt: json['replied_at'] as String?,
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
       syncStatus: 'synced',
