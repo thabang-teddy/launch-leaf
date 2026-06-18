@@ -63,6 +63,13 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.stor
 Route::get('/pages/{slug}', [FrontendPageController::class, 'show'])->name('pages.show');
 
 // ─────────────────────────────────────────────────────────────────────────────
+// App downloads (public — no auth required so phones can download directly)
+// ─────────────────────────────────────────────────────────────────────────────
+
+Route::get('/download/apk', [DashDownloadController::class, 'apk'])->name('download.apk');
+Route::get('/download/exe', [DashDownloadController::class, 'exe'])->name('download.exe');
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Dashboard (auth-protected)
 // ─────────────────────────────────────────────────────────────────────────────
 

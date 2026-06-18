@@ -15,7 +15,7 @@ if (hasKeystore) {
 
 android {
     namespace = "com.launchleaf.launch_leaf"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
