@@ -18,7 +18,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 
@@ -32,6 +32,17 @@ const COLUMN_COLORS = {
     primary: '#0d6efd', secondary: '#6c757d', success: '#198754',
     danger: '#dc3545', warning: '#ffc107', info: '#0dcaf0', dark: '#212529',
 };
+
+const COLOR_OPTIONS = [
+    { value: '', label: 'Mint (default)' },
+    { value: 'primary', label: 'Blue' },
+    { value: 'secondary', label: 'Gray' },
+    { value: 'success', label: 'Green' },
+    { value: 'danger', label: 'Red' },
+    { value: 'warning', label: 'Yellow' },
+    { value: 'info', label: 'Cyan' },
+    { value: 'dark', label: 'Dark' },
+];
 
 // ─── Persist helpers (fire-and-forget via axios) ──────────────────────────────
 function persistColumnOrder(cols) {
@@ -52,13 +63,149 @@ function persistCardOrder(cols) {
     axios.post(route('dashboard.kanban.cards.reorder'), { items }).catch(() => {});
 }
 
+// ─── Shared Modal Shell ───────────────────────────────────────────────────────
+function KanbanModal({ title, onClose, children }) {
+    useEffect(() => {
+        const handler = (e) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, [onClose]);
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div onClick={onClose} style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} />
+            <div style={{ position: 'relative', background: '#fff', borderRadius: '16px', width: '100%', maxWidth: '480px', boxShadow: '0 24px 64px rgba(0,0,0,0.2)', padding: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+                    <h6 style={{ margin: 0, fontWeight: 700, color: C.text, fontSize: '1rem' }}>{title}</h6>
+                    <button onClick={onClose} style={{ background: C.bg, border: 'none', color: C.muted, cursor: 'pointer', width: '28px', height: '28px', borderRadius: '6px', fontSize: '0.9rem' }}>✕</button>
+                </div>
+                {children}
+            </div>
+        </div>
+    );
+}
+
+const F = {
+    input:  { width: '100%', padding: '8px 12px', borderRadius: '8px', border: `1px solid ${C.border}`, fontSize: '0.875rem', outline: 'none', color: C.text, boxSizing: 'border-box' },
+    label:  { display: 'block', marginBottom: '4px', fontWeight: 600, fontSize: '0.8rem', color: C.text },
+    error:  { color: '#EF4444', fontSize: '0.75rem', margin: '3px 0 0' },
+    field:  { marginBottom: '1rem' },
+    footer: { display: 'flex', gap: '8px', justifyContent: 'flex-end', marginTop: '1.5rem' },
+    cancel: { padding: '8px 16px', borderRadius: '8px', border: `1px solid ${C.border}`, background: '#fff', color: C.text, cursor: 'pointer', fontWeight: 500, fontSize: '0.875rem' },
+    submit: (processing) => ({ padding: '8px 20px', borderRadius: '8px', border: 'none', background: C.green, color: '#fff', cursor: processing ? 'not-allowed' : 'pointer', fontWeight: 600, fontSize: '0.875rem', opacity: processing ? 0.7 : 1 }),
+};
+
+// ─── Column Form Modal ────────────────────────────────────────────────────────
+function ColumnFormModal({ project, column, onClose }) {
+    const isEdit = !!column;
+    const { data, setData, post, patch, processing, errors } = useForm({
+        kanban_project_id: project.id,
+        title: column?.title ?? '',
+        color: column?.color ?? '',
+    });
+
+    const submit = (e) => {
+        e.preventDefault();
+        if (isEdit) {
+            patch(route('dashboard.kanban.columns.update', column.id), { preserveScroll: true, onSuccess: onClose });
+        } else {
+            post(route('dashboard.kanban.columns.store'), { preserveScroll: true, onSuccess: onClose });
+        }
+    };
+
+    return (
+        <KanbanModal title={isEdit ? 'Edit Column' : 'Add Column'} onClose={onClose}>
+            <form onSubmit={submit}>
+                <div style={F.field}>
+                    <label style={F.label}>Title <span style={{ color: '#EF4444' }}>*</span></label>
+                    <input type="text" value={data.title} onChange={e => setData('title', e.target.value)}
+                        style={F.input} placeholder="Column title" autoFocus />
+                    {errors.title && <p style={F.error}>{errors.title}</p>}
+                </div>
+
+                <div style={F.field}>
+                    <label style={F.label}>Header Color</label>
+                    <select value={data.color} onChange={e => setData('color', e.target.value)} style={F.input}>
+                        {COLOR_OPTIONS.map(opt => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <div style={F.footer}>
+                    <button type="button" onClick={onClose} style={F.cancel}>Cancel</button>
+                    <button type="submit" disabled={processing} style={F.submit(processing)}>
+                        {processing ? 'Saving…' : isEdit ? 'Update Column' : 'Add Column'}
+                    </button>
+                </div>
+            </form>
+        </KanbanModal>
+    );
+}
+
+// ─── Card Form Modal ──────────────────────────────────────────────────────────
+function CardFormModal({ columns, card, defaultColumnId, onClose }) {
+    const isEdit = !!card;
+    const { data, setData, post, patch, processing, errors } = useForm({
+        kanban_column_id: card?.kanban_column_id ?? defaultColumnId ?? (columns[0]?.id ?? ''),
+        title:            card?.title ?? '',
+        description:      card?.description ?? '',
+        due_date:         card?.due_date ?? '',
+    });
+
+    const submit = (e) => {
+        e.preventDefault();
+        if (isEdit) {
+            patch(route('dashboard.kanban.cards.update', card.id), { preserveScroll: true, onSuccess: onClose });
+        } else {
+            post(route('dashboard.kanban.cards.store'), { preserveScroll: true, onSuccess: onClose });
+        }
+    };
+
+    return (
+        <KanbanModal title={isEdit ? 'Edit Card' : 'Add Card'} onClose={onClose}>
+            <form onSubmit={submit}>
+                <div style={F.field}>
+                    <label style={F.label}>Column</label>
+                    <select value={data.kanban_column_id} onChange={e => setData('kanban_column_id', e.target.value)} style={F.input}>
+                        {columns.map(col => <option key={col.id} value={col.id}>{col.title}</option>)}
+                    </select>
+                </div>
+
+                <div style={F.field}>
+                    <label style={F.label}>Title <span style={{ color: '#EF4444' }}>*</span></label>
+                    <input type="text" value={data.title} onChange={e => setData('title', e.target.value)}
+                        style={F.input} placeholder="Card title" autoFocus />
+                    {errors.title && <p style={F.error}>{errors.title}</p>}
+                </div>
+
+                <div style={F.field}>
+                    <label style={F.label}>Description</label>
+                    <textarea value={data.description ?? ''} onChange={e => setData('description', e.target.value)}
+                        rows={3} style={{ ...F.input, resize: 'vertical' }} placeholder="Optional description" />
+                </div>
+
+                <div style={F.field}>
+                    <label style={F.label}>Due Date</label>
+                    <input type="date" value={data.due_date ?? ''} onChange={e => setData('due_date', e.target.value)} style={F.input} />
+                </div>
+
+                <div style={F.footer}>
+                    <button type="button" onClick={onClose} style={F.cancel}>Cancel</button>
+                    <button type="submit" disabled={processing} style={F.submit(processing)}>
+                        {processing ? 'Saving…' : isEdit ? 'Update Card' : 'Add Card'}
+                    </button>
+                </div>
+            </form>
+        </KanbanModal>
+    );
+}
+
 // ─── Board ────────────────────────────────────────────────────────────────────
 export default function Board({ project, columns }) {
     const [localColumns, setLocalColumns] = useState(columns);
 
     // Sync when Inertia delivers fresh props after a delete (or any server-side change).
-    // The version key is stable during DnD (IDs and card counts don't change via axios)
-    // but changes whenever a column or card is added/removed via Inertia navigation.
     const columnsVersion = columns.map(c => `${c.id}:${c.cards.length}`).join('|');
     useEffect(() => {
         setLocalColumns(columns);
@@ -66,9 +213,12 @@ export default function Board({ project, columns }) {
     // fire on every render because Inertia creates a new array reference each time.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [columnsVersion]);
+
     const [activeId, setActiveId]         = useState(null);
     const [activeData, setActiveData]     = useState(null);
-    const [modal, setModal]               = useState(null);
+    const [modal, setModal]               = useState(null);         // confirm modal
+    const [columnModal, setColumnModal]   = useState(null);         // null | {mode:'create'} | {mode:'edit', column}
+    const [cardModal, setCardModal]       = useState(null);         // null | {mode:'create', columnId?} | {mode:'edit', card}
 
     const sensors = useSensors(
         useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -95,7 +245,6 @@ export default function Board({ project, columns }) {
         setActiveData(active.data.current);
     }
 
-    // Cross-column card moves happen here (optimistic UI)
     function handleDragOver({ active, over }) {
         if (!over) return;
         if (active.data.current?.type !== 'card') return;
@@ -137,7 +286,6 @@ export default function Board({ project, columns }) {
 
         const activeType = active.data.current?.type;
 
-        // ── Column reorder ──
         if (activeType === 'column') {
             setLocalColumns(prev => {
                 const oldIdx = prev.findIndex(c => `col-${c.id}` === active.id);
@@ -150,13 +298,11 @@ export default function Board({ project, columns }) {
             return;
         }
 
-        // ── Card reorder / settle ──
         if (activeType === 'card') {
             const activeCardId = active.data.current.card.id;
             const overType     = over.data.current?.type;
 
             setLocalColumns(prev => {
-                // Dropped on a column: cross-column already done in onDragOver — just persist
                 if (overType !== 'card') {
                     persistCardOrder(prev);
                     return prev;
@@ -168,10 +314,8 @@ export default function Board({ project, columns }) {
                 const srcColIdx = prev.findIndex(c => c.cards.some(cd => cd.id === activeCardId));
                 const dstColIdx = prev.findIndex(c => c.cards.some(cd => cd.id === overCardId));
 
-                // Cross-column: onDragOver already moved it — just persist
                 if (srcColIdx !== dstColIdx) { persistCardOrder(prev); return prev; }
 
-                // Same-column reorder
                 const newCols = prev.map(c => ({ ...c, cards: [...c.cards] }));
                 const col     = newCols[srcColIdx];
                 const from    = col.cards.findIndex(cd => cd.id === activeCardId);
@@ -183,7 +327,9 @@ export default function Board({ project, columns }) {
         }
     }
 
-    const columnIds = localColumns.map(c => `col-${c.id}`);
+    const columnIds  = localColumns.map(c => `col-${c.id}`);
+    const btnOutline = { border: `1px solid ${C.border}`, background: C.card, color: C.text, borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' };
+    const btnPrimary = { border: 'none', background: C.green, color: '#fff', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer' };
 
     return (
         <DashboardLayout header={project.name}>
@@ -198,6 +344,19 @@ export default function Board({ project, columns }) {
                 onCancel={() => setModal(null)}
             />
 
+            {columnModal?.mode === 'create' && (
+                <ColumnFormModal project={project} onClose={() => setColumnModal(null)} />
+            )}
+            {columnModal?.mode === 'edit' && (
+                <ColumnFormModal project={project} column={columnModal.column} onClose={() => setColumnModal(null)} />
+            )}
+            {cardModal?.mode === 'create' && (
+                <CardFormModal columns={localColumns} defaultColumnId={cardModal.columnId} onClose={() => setCardModal(null)} />
+            )}
+            {cardModal?.mode === 'edit' && (
+                <CardFormModal columns={localColumns} card={cardModal.card} onClose={() => setCardModal(null)} />
+            )}
+
             {/* Breadcrumb + actions */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -209,16 +368,10 @@ export default function Board({ project, columns }) {
                     <span style={{ fontWeight: 600, color: C.text, fontSize: '0.95rem' }}>{project.name}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                    <Link href={route('dashboard.kanban.columns.create', { project_id: project.id })}
-                        style={{ background: C.card, color: C.text, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', textDecoration: 'none' }}>
-                        + Column
-                    </Link>
-                    <Link href={route('dashboard.kanban.cards.create', { project_id: project.id })}
-                        style={{ background: C.green, color: '#fff', borderRadius: '8px', padding: '6px 14px', fontWeight: 600, fontSize: '0.8rem', textDecoration: 'none' }}>
-                        + Card
-                    </Link>
+                    <button onClick={() => setColumnModal({ mode: 'create' })} style={btnOutline}>+ Column</button>
+                    <button onClick={() => setCardModal({ mode: 'create', columnId: localColumns[0]?.id })} style={btnPrimary}>+ Card</button>
                     <Link href={route('dashboard.kanban.projects.edit', project.id)}
-                        style={{ background: C.bg, color: C.muted, border: `1px solid ${C.border}`, borderRadius: '8px', padding: '6px 12px', fontSize: '0.8rem', textDecoration: 'none' }}>
+                        style={{ ...btnOutline, background: C.bg, color: C.muted, textDecoration: 'none' }}>
                         ✏ Edit
                     </Link>
                 </div>
@@ -237,19 +390,23 @@ export default function Board({ project, columns }) {
                         {localColumns.length === 0 && (
                             <div style={{ textAlign: 'center', padding: '3rem 2rem', width: '100%', background: C.card, borderRadius: '14px', border: `1px dashed ${C.border}` }}>
                                 <p style={{ color: C.muted, marginBottom: '1rem' }}>No columns yet. Add one to get started.</p>
-                                <Link href={route('dashboard.kanban.columns.create', { project_id: project.id })}
-                                    style={{ background: C.greenSoft, color: C.greenText, borderRadius: '8px', padding: '8px 20px', fontWeight: 600, fontSize: '0.875rem', textDecoration: 'none' }}>
+                                <button
+                                    onClick={() => setColumnModal({ mode: 'create' })}
+                                    style={{ background: C.greenSoft, color: C.greenText, borderRadius: '8px', padding: '8px 20px', fontWeight: 600, fontSize: '0.875rem', border: 'none', cursor: 'pointer' }}
+                                >
                                     + Add Column
-                                </Link>
+                                </button>
                             </div>
                         )}
                         {localColumns.map(col => (
                             <SortableColumn
                                 key={col.id}
                                 column={col}
-                                project={project}
                                 onAskDeleteColumn={askDeleteColumn}
                                 onAskDeleteCard={askDeleteCard}
+                                onEditColumn={(c) => setColumnModal({ mode: 'edit', column: c })}
+                                onAddCard={(colId) => setCardModal({ mode: 'create', columnId: colId })}
+                                onEditCard={(card) => setCardModal({ mode: 'edit', card })}
                             />
                         ))}
                     </div>
@@ -265,7 +422,7 @@ export default function Board({ project, columns }) {
 }
 
 // ─── Sortable Column ──────────────────────────────────────────────────────────
-function SortableColumn({ column, project, onAskDeleteColumn, onAskDeleteCard }) {
+function SortableColumn({ column, onAskDeleteColumn, onAskDeleteCard, onEditColumn, onAddCard, onEditCard }) {
     const {
         attributes, listeners, setNodeRef,
         transform, transition, isDragging,
@@ -307,10 +464,10 @@ function SortableColumn({ column, project, onAskDeleteColumn, onAskDeleteCard })
                         </span>
                     </span>
                     <div style={{ display: 'flex', gap: '3px', flexShrink: 0 }}>
-                        <Link
-                            href={route('dashboard.kanban.columns.edit', column.id)}
-                            style={{ width: '22px', height: '22px', borderRadius: '4px', background: 'rgba(255,255,255,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: headerText, textDecoration: 'none', fontSize: '0.65rem' }}
-                        >✏</Link>
+                        <button
+                            onClick={() => onEditColumn(column)}
+                            style={{ width: '22px', height: '22px', borderRadius: '4px', background: 'rgba(255,255,255,0.22)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: headerText, fontSize: '0.65rem' }}
+                        >✏</button>
                         <button
                             onClick={() => onAskDeleteColumn(column.id)}
                             style={{ width: '22px', height: '22px', borderRadius: '4px', background: 'rgba(255,255,255,0.22)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: headerText, fontSize: '0.65rem' }}
@@ -334,6 +491,7 @@ function SortableColumn({ column, project, onAskDeleteColumn, onAskDeleteCard })
                                 key={card.id}
                                 card={card}
                                 onAskDelete={onAskDeleteCard}
+                                onEditCard={onEditCard}
                             />
                         ))}
                     </div>
@@ -341,12 +499,12 @@ function SortableColumn({ column, project, onAskDeleteColumn, onAskDeleteCard })
 
                 {/* Add card shortcut */}
                 <div style={{ padding: '0 8px 8px' }}>
-                    <Link
-                        href={route('dashboard.kanban.cards.create', { project_id: project.id })}
-                        style={{ display: 'block', textAlign: 'center', padding: '6px', color: C.muted, fontSize: '0.78rem', textDecoration: 'none', borderRadius: '6px', border: `1px dashed ${C.border}` }}
+                    <button
+                        onClick={() => onAddCard(column.id)}
+                        style={{ display: 'block', width: '100%', textAlign: 'center', padding: '6px', color: C.muted, fontSize: '0.78rem', cursor: 'pointer', borderRadius: '6px', border: `1px dashed ${C.border}`, background: 'none' }}
                     >
                         + Add card
-                    </Link>
+                    </button>
                 </div>
             </div>
         </div>
@@ -354,7 +512,7 @@ function SortableColumn({ column, project, onAskDeleteColumn, onAskDeleteCard })
 }
 
 // ─── Sortable Card ────────────────────────────────────────────────────────────
-function SortableCard({ card, onAskDelete }) {
+function SortableCard({ card, onAskDelete, onEditCard }) {
     const {
         attributes, listeners, setNodeRef,
         transform, transition, isDragging,
@@ -406,12 +564,12 @@ function SortableCard({ card, onAskDelete }) {
                     </span>
                 )}
                 <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                    <Link
-                        href={route('dashboard.kanban.cards.edit', card.id)}
-                        style={{ flex: 1, textAlign: 'center', padding: '3px', background: C.greenSoft, color: C.greenText, borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, textDecoration: 'none' }}
+                    <button
+                        onClick={() => onEditCard(card)}
+                        style={{ flex: 1, textAlign: 'center', padding: '3px', background: C.greenSoft, color: C.greenText, borderRadius: '4px', fontSize: '0.7rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
                     >
                         Edit
-                    </Link>
+                    </button>
                     <button
                         onClick={() => onAskDelete(card.id)}
                         style={{ padding: '3px 8px', background: '#FEF2F2', border: 'none', borderRadius: '4px', color: '#EF4444', cursor: 'pointer', fontSize: '0.7rem' }}

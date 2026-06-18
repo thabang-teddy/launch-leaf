@@ -1,0 +1,15 @@
+1. Set up signing (if you haven't already from the previous step):
+
+cd C:\Users\Teddy\projects\launch-leaf\flutter_dashboard
+keytool -genkey -v -keystore android\launch-leaf.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias launch-leaf
+Create flutter_dashboard\android\key.properties with your passwords.
+
+2. Build with split-per-abi (gives you a small ~15 MB arm64 APK instead of 56 MB):
+
+flutter build apk --release --split-per-abi
+3. Copy the arm64 APK to the downloads folder:
+
+copy flutter_dashboard\build\app\outputs\flutter-apk\app-arm64-v8a-release.apk laravel\public\downloads\launch-leaf-v1.0.0.apk
+4. Test the download URL — open http://127.0.0.1:8000/download/apk in your phone's browser and the file should arrive at exactly the right size, then install cleanly on Android 15.
+
+

@@ -74,7 +74,7 @@ class KanbanProjectController extends Controller
         $kanbanProject->update($validated);
 
         return redirect()
-            ->route('dashboard.kanban.projects.show', $kanbanProject)
+            ->route('dashboard.kanban.index')
             ->with('success', 'Project updated.');
     }
 
