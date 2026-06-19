@@ -1,1 +1,0 @@
-import{j as c}from"./app-51ee585b.js";function s({className:o="",disabled:t,children:r,...n}){return c.jsx("button",{...n,className:`btn-accent ${t?"opacity-50":""} ${o}`,style:{opacity:t?.55:void 0,cursor:t?"not-allowed":void 0},disabled:t,children:r})}export{s as P};
