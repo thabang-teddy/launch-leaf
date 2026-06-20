@@ -205,8 +205,19 @@ function CardFormModal({ columns, card, defaultColumnId, onClose }) {
 export default function Board({ project, columns }) {
     const [localColumns, setLocalColumns] = useState(columns);
 
-    // Sync when Inertia delivers fresh props after a delete (or any server-side change).
-    const columnsVersion = columns.map(c => `${c.id}:${c.cards.length}`).join('|');
+    // Sync when Inertia delivers fresh props after any server-side change.
+    // Tracks all fields that can change via create/edit/delete so localColumns
+    // always reflects the latest server state after form submissions.
+    const columnsVersion = JSON.stringify(
+        columns.map(c => ({
+            id: c.id, title: c.title, color: c.color,
+            cards: c.cards.map(cd => ({
+                id: cd.id, title: cd.title,
+                description: cd.description, due_date: cd.due_date,
+                kanban_column_id: cd.kanban_column_id,
+            })),
+        }))
+    );
     useEffect(() => {
         setLocalColumns(columns);
     // columnsVersion is the derived stable key — listing `columns` directly would
