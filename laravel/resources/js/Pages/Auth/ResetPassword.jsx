@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
@@ -7,6 +7,8 @@ import TextInput from '@/Components/TextInput';
 import { Head, useForm } from '@inertiajs/react';
 
 export default function ResetPassword({ token, email }) {
+    const [showPassword, setShowPassword]   = useState(false);
+    const [showConfirm, setShowConfirm]     = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         token,
         email,
@@ -45,27 +47,47 @@ export default function ResetPassword({ token, email }) {
 
                 <div className="mb-3">
                     <InputLabel htmlFor="password" value="New Password" />
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        autoComplete="new-password"
-                        isFocused
-                        onChange={e => setData('password', e.target.value)}
-                    />
+                    <div style={{ position: 'relative' }}>
+                        <TextInput
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            value={data.password}
+                            autoComplete="new-password"
+                            isFocused
+                            onChange={e => setData('password', e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            tabIndex={-1}
+                            onClick={() => setShowPassword(v => !v)}
+                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '0.75rem', fontWeight: 600, padding: '2px', userSelect: 'none' }}
+                        >
+                            {showPassword ? 'Hide' : 'Show'}
+                        </button>
+                    </div>
                     <InputError message={errors.password} />
                 </div>
 
                 <div className="mb-3">
                     <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
-                    <TextInput
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        autoComplete="new-password"
-                        onChange={e => setData('password_confirmation', e.target.value)}
-                    />
+                    <div style={{ position: 'relative' }}>
+                        <TextInput
+                            type={showConfirm ? 'text' : 'password'}
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            autoComplete="new-password"
+                            onChange={e => setData('password_confirmation', e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            tabIndex={-1}
+                            onClick={() => setShowConfirm(v => !v)}
+                            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', fontSize: '0.75rem', fontWeight: 600, padding: '2px', userSelect: 'none' }}
+                        >
+                            {showConfirm ? 'Hide' : 'Show'}
+                        </button>
+                    </div>
                     <InputError message={errors.password_confirmation} />
                 </div>
 
