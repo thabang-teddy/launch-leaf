@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ContactApiController;
 use App\Http\Controllers\Api\DashboardApiController;
+use App\Http\Controllers\Api\FlutterSyncController;
 use App\Http\Controllers\Api\KanbanApiController;
 use App\Http\Controllers\Api\NoteApiController;
 use App\Http\Controllers\Api\TaskApiController;
@@ -18,6 +19,9 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Local-first sync — push pending changes to server
+    Route::post('/sync/changes', [FlutterSyncController::class, 'sync']);
 
     Route::get('/dashboard', [DashboardApiController::class, 'index']);
 

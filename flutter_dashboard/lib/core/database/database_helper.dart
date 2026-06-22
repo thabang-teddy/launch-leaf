@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../models/contact_model.dart';
 import '../../models/kanban_models.dart';
 import '../../models/note_model.dart';
+import '../../models/sync_change_model.dart';
 import '../../models/task_model.dart';
 
 class DatabaseHelper {
@@ -21,9 +22,23 @@ class DatabaseHelper {
     final dbPath = '$path/launch_leaf.db';
     return openDatabase(
       dbPath,
-      version: 1,
+      version: 3,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('DROP TABLE IF EXISTS kanban_cards');
+      await db.execute('DROP TABLE IF EXISTS kanban_columns');
+      await db.execute('DROP TABLE IF EXISTS kanban_projects');
+      await db.execute('DROP TABLE IF EXISTS kanban_boards');
+      await _createKanbanTables(db);
+    }
+    if (oldVersion < 3) {
+      await _createSyncChangesTable(db);
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -71,10 +86,15 @@ class DatabaseHelper {
       )
     ''');
 
+    await _createKanbanTables(db);
+    await _createSyncChangesTable(db);
+  }
+
+  Future<void> _createKanbanTables(Database db) async {
     await db.execute('''
       CREATE TABLE kanban_boards (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        remote_id INTEGER,
+        remote_id TEXT,
         name TEXT,
         description TEXT,
         color TEXT,
@@ -86,9 +106,9 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE kanban_projects (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        remote_id INTEGER,
+        remote_id TEXT,
         board_id INTEGER,
-        remote_board_id INTEGER,
+        remote_board_id TEXT,
         name TEXT,
         description TEXT,
         color TEXT,
@@ -100,9 +120,9 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE kanban_columns (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        remote_id INTEGER,
+        remote_id TEXT,
         project_id INTEGER,
-        remote_project_id INTEGER,
+        remote_project_id TEXT,
         title TEXT,
         color TEXT,
         order_idx INTEGER DEFAULT 0,
@@ -113,14 +133,29 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE kanban_cards (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        remote_id INTEGER,
+        remote_id TEXT,
         column_id INTEGER,
-        remote_column_id INTEGER,
+        remote_column_id TEXT,
         title TEXT,
         description TEXT,
         due_date TEXT,
         order_idx INTEGER DEFAULT 0,
         sync_status TEXT DEFAULT 'synced'
+      )
+    ''');
+  }
+
+  Future<void> _createSyncChangesTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE sync_changes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        local_id INTEGER NOT NULL,
+        remote_id TEXT,
+        table_name TEXT NOT NULL,
+        action_type TEXT NOT NULL,
+        datetime TEXT NOT NULL,
+        data TEXT NOT NULL,
+        UNIQUE(table_name, local_id)
       )
     ''');
   }
@@ -135,14 +170,17 @@ class DatabaseHelper {
 
     final notes = count(await db.rawQuery('SELECT COUNT(*) FROM notes'));
     final tasksTotal = count(await db.rawQuery('SELECT COUNT(*) FROM tasks'));
-    final tasksPending =
-        count(await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 0'));
-    final tasksDone =
-        count(await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 1'));
-    final contactsTotal = count(await db.rawQuery('SELECT COUNT(*) FROM contacts'));
+    final tasksPending = count(
+        await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 0'));
+    final tasksDone = count(
+        await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 1'));
+    final contactsTotal =
+        count(await db.rawQuery('SELECT COUNT(*) FROM contacts'));
     const contactsPending = 0;
-    final kanbanBoards = count(await db.rawQuery('SELECT COUNT(*) FROM kanban_boards'));
-    final kanbanCards = count(await db.rawQuery('SELECT COUNT(*) FROM kanban_cards'));
+    final kanbanBoards =
+        count(await db.rawQuery('SELECT COUNT(*) FROM kanban_boards'));
+    final kanbanCards =
+        count(await db.rawQuery('SELECT COUNT(*) FROM kanban_cards'));
 
     return {
       'notes': notes,
@@ -154,6 +192,96 @@ class DatabaseHelper {
       'kanban_boards': kanbanBoards,
       'kanban_cards': kanbanCards,
     };
+  }
+
+  // ─── Sync Changes ─────────────────────────────────────────────────────────
+
+  /// Inserts or updates a change record with merge logic:
+  ///   existing create  + new update → keep create, update data/datetime
+  ///   existing create  + new delete → update to delete
+  ///   existing update  + new update → update data/datetime
+  ///   existing update  + new delete → update to delete
+  ///   existing delete  + new create → update to create
+  ///   no existing row              → insert
+  Future<void> upsertChange(SyncChange change) async {
+    final db = await database;
+
+    final existing = await db.query(
+      'sync_changes',
+      where: 'table_name = ? AND local_id = ?',
+      whereArgs: [change.tableName, change.localId],
+      limit: 1,
+    );
+
+    if (existing.isEmpty) {
+      final map = change.toMap()..remove('id');
+      await db.insert('sync_changes', map);
+      return;
+    }
+
+    final existingAction = existing.first['action_type'] as String;
+    final existingId = existing.first['id'] as int;
+    final newAction = change.actionType;
+
+    final String mergedAction;
+    if (existingAction == 'create' && newAction == 'update') {
+      mergedAction = 'create';
+    } else if (existingAction == 'create' && newAction == 'delete') {
+      mergedAction = 'delete';
+    } else if (existingAction == 'update' && newAction == 'update') {
+      mergedAction = 'update';
+    } else if (existingAction == 'update' && newAction == 'delete') {
+      mergedAction = 'delete';
+    } else if (existingAction == 'delete' && newAction == 'create') {
+      mergedAction = 'create';
+    } else {
+      mergedAction = newAction;
+    }
+
+    await db.update(
+      'sync_changes',
+      {
+        'action_type': mergedAction,
+        'datetime': change.datetime,
+        'data': change.data,
+        'remote_id': change.remoteId,
+      },
+      where: 'id = ?',
+      whereArgs: [existingId],
+    );
+  }
+
+  Future<List<SyncChange>> getPendingChanges() async {
+    final db = await database;
+    final rows = await db.query('sync_changes', orderBy: 'id ASC');
+    return rows.map(SyncChange.fromMap).toList();
+  }
+
+  Future<void> deleteChange(int localId, String tableName) async {
+    final db = await database;
+    await db.delete(
+      'sync_changes',
+      where: 'local_id = ? AND table_name = ?',
+      whereArgs: [localId, tableName],
+    );
+  }
+
+  Future<void> clearAllChanges() async {
+    final db = await database;
+    await db.delete('sync_changes');
+  }
+
+  /// Sets remote_id on a local item after a successful create sync.
+  Future<void> updateRemoteId(
+    String tableName,
+    int localId,
+    String remoteId,
+  ) async {
+    final db = await database;
+    await db.rawUpdate(
+      'UPDATE $tableName SET remote_id = ? WHERE id = ?',
+      [remoteId, localId],
+    );
   }
 
   // ─── Notes ────────────────────────────────────────────────────────────────
@@ -216,7 +344,8 @@ class DatabaseHelper {
 
   Future<List<TaskModel>> getTasks() async {
     final db = await database;
-    final rows = await db.query('tasks', orderBy: 'order_idx ASC, created_at DESC');
+    final rows =
+        await db.query('tasks', orderBy: 'order_idx ASC, created_at DESC');
     return rows.map(TaskModel.fromMap).toList();
   }
 
@@ -354,6 +483,16 @@ class DatabaseHelper {
     return db.insert('kanban_boards', map);
   }
 
+  Future<void> updateBoard(KanbanBoard board) async {
+    final db = await database;
+    await db.update(
+      'kanban_boards',
+      board.toMap(),
+      where: 'id = ?',
+      whereArgs: [board.id],
+    );
+  }
+
   Future<void> upsertBoardByRemoteId(KanbanBoard board) async {
     final db = await database;
     final existing = await db.query(
@@ -406,10 +545,37 @@ class DatabaseHelper {
     return rows.map(KanbanProject.fromMap).toList();
   }
 
+  Future<KanbanProject?> getProjectById(int id) async {
+    final db = await database;
+    final rows = await db.query(
+      'kanban_projects',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return KanbanProject.fromMap(rows.first);
+  }
+
   Future<int> insertProject(KanbanProject project) async {
     final db = await database;
     final map = project.toMap()..remove('id');
     return db.insert('kanban_projects', map);
+  }
+
+  Future<void> updateProject(KanbanProject project) async {
+    final db = await database;
+    await db.update(
+      'kanban_projects',
+      project.toMap(),
+      where: 'id = ?',
+      whereArgs: [project.id],
+    );
+  }
+
+  Future<void> deleteProject(int id) async {
+    final db = await database;
+    await db.delete('kanban_projects', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> upsertProjectByRemoteId(KanbanProject project) async {
@@ -464,10 +630,37 @@ class DatabaseHelper {
     return rows.map(KanbanColumn.fromMap).toList();
   }
 
+  Future<KanbanColumn?> getColumnById(int id) async {
+    final db = await database;
+    final rows = await db.query(
+      'kanban_columns',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return KanbanColumn.fromMap(rows.first);
+  }
+
   Future<int> insertColumn(KanbanColumn column) async {
     final db = await database;
     final map = column.toMap()..remove('id');
     return db.insert('kanban_columns', map);
+  }
+
+  Future<void> updateColumn(KanbanColumn column) async {
+    final db = await database;
+    await db.update(
+      'kanban_columns',
+      column.toMap(),
+      where: 'id = ?',
+      whereArgs: [column.id],
+    );
+  }
+
+  Future<void> deleteColumn(int id) async {
+    final db = await database;
+    await db.delete('kanban_columns', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> upsertColumnByRemoteId(KanbanColumn column) async {
@@ -522,10 +715,37 @@ class DatabaseHelper {
     return rows.map(KanbanCard.fromMap).toList();
   }
 
+  Future<KanbanCard?> getCardById(int id) async {
+    final db = await database;
+    final rows = await db.query(
+      'kanban_cards',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return KanbanCard.fromMap(rows.first);
+  }
+
   Future<int> insertCard(KanbanCard card) async {
     final db = await database;
     final map = card.toMap()..remove('id');
     return db.insert('kanban_cards', map);
+  }
+
+  Future<void> updateCard(KanbanCard card) async {
+    final db = await database;
+    await db.update(
+      'kanban_cards',
+      card.toMap(),
+      where: 'id = ?',
+      whereArgs: [card.id],
+    );
+  }
+
+  Future<void> deleteCard(int id) async {
+    final db = await database;
+    await db.delete('kanban_cards', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<void> upsertCardByRemoteId(KanbanCard card) async {

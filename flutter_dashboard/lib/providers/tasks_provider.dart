@@ -23,7 +23,7 @@ class TasksProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await SyncService.instance.syncTasks();
+      await SyncService.instance.pullTasks();
     } catch (_) {
       // Sync failed — will display whatever is already in local DB.
     }
@@ -111,7 +111,7 @@ class TasksProvider extends ChangeNotifier {
   /// manually triggers a sync or when connectivity is restored.
   Future<void> pushPending() async {
     try {
-      await SyncService.instance.pushPendingTasks();
+      await SyncService.instance.syncAll();
       await reloadFromLocal();
     } on Exception catch (e) {
       _errorMessage = 'Sync failed: ${e.toString()}';

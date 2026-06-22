@@ -23,7 +23,7 @@ class NotesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await SyncService.instance.syncNotes();
+      await SyncService.instance.pullNotes();
     } catch (_) {
       // Sync failed — will display whatever is already in local DB.
     }

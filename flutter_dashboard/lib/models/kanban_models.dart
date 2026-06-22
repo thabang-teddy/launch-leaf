@@ -1,9 +1,5 @@
-int? _toInt(dynamic v) {
-  if (v == null) return null;
-  if (v is int) return v;
-  if (v is String) return int.tryParse(v);
-  return null;
-}
+// Kanban IDs on the server are UUIDs (strings). remoteId / remoteXxxId are
+// String? throughout so they survive a round-trip through fromApi / toMap.
 
 class KanbanBoard {
   const KanbanBoard({
@@ -17,7 +13,7 @@ class KanbanBoard {
   });
 
   final int id;
-  final int? remoteId;
+  final String? remoteId;
   final String name;
   final String description;
   final String color;
@@ -26,7 +22,7 @@ class KanbanBoard {
 
   KanbanBoard copyWith({
     int? id,
-    int? remoteId,
+    String? remoteId,
     String? name,
     String? description,
     String? color,
@@ -56,7 +52,7 @@ class KanbanBoard {
 
   factory KanbanBoard.fromMap(Map<String, dynamic> map) => KanbanBoard(
         id: map['id'] as int,
-        remoteId: map['remote_id'] as int?,
+        remoteId: map['remote_id'] as String?,
         name: map['name'] as String? ?? '',
         description: map['description'] as String? ?? '',
         color: map['color'] as String? ?? '#1a1a2e',
@@ -66,13 +62,19 @@ class KanbanBoard {
 
   factory KanbanBoard.fromApi(Map<String, dynamic> json) => KanbanBoard(
         id: 0,
-        remoteId: _toInt(json['id']),
+        remoteId: json['id'] as String?,
         name: json['name'] as String? ?? '',
         description: json['description'] as String? ?? '',
         color: json['color'] as String? ?? '#1a1a2e',
-        orderIdx: _toInt(json['order_idx']) ?? 0,
+        orderIdx: (json['order'] as num?)?.toInt() ?? 0,
         syncStatus: 'synced',
       );
+
+  Map<String, dynamic> toApiPayload() => {
+        'name': name,
+        'description': description,
+        'color': color,
+      };
 }
 
 class KanbanProject {
@@ -90,9 +92,9 @@ class KanbanProject {
   });
 
   final int id;
-  final int? remoteId;
+  final String? remoteId;
   final int boardId;
-  final int? remoteBoardId;
+  final String? remoteBoardId;
   final String name;
   final String description;
   final String color;
@@ -102,9 +104,9 @@ class KanbanProject {
 
   KanbanProject copyWith({
     int? id,
-    int? remoteId,
+    String? remoteId,
     int? boardId,
-    int? remoteBoardId,
+    String? remoteBoardId,
     String? name,
     String? description,
     String? color,
@@ -140,9 +142,9 @@ class KanbanProject {
 
   factory KanbanProject.fromMap(Map<String, dynamic> map) => KanbanProject(
         id: map['id'] as int,
-        remoteId: map['remote_id'] as int?,
+        remoteId: map['remote_id'] as String?,
         boardId: map['board_id'] as int? ?? 0,
-        remoteBoardId: map['remote_board_id'] as int?,
+        remoteBoardId: map['remote_board_id'] as String?,
         name: map['name'] as String? ?? '',
         description: map['description'] as String? ?? '',
         color: map['color'] as String? ?? '#e74c3c',
@@ -156,15 +158,22 @@ class KanbanProject {
   ) =>
       KanbanProject(
         id: 0,
-        remoteId: _toInt(json['id']),
+        remoteId: json['id'] as String?,
         boardId: localBoardId,
-        remoteBoardId: _toInt(json['board_id']),
+        remoteBoardId: json['kanban_board_id'] as String?,
         name: json['name'] as String? ?? '',
         description: json['description'] as String? ?? '',
         color: json['color'] as String? ?? '#e74c3c',
-        orderIdx: _toInt(json['order_idx']) ?? 0,
+        orderIdx: (json['order'] as num?)?.toInt() ?? 0,
         syncStatus: 'synced',
       );
+
+  Map<String, dynamic> toApiPayload() => {
+        'kanban_board_id': remoteBoardId,
+        'name': name,
+        'description': description,
+        'color': color,
+      };
 }
 
 class KanbanColumn {
@@ -181,9 +190,9 @@ class KanbanColumn {
   });
 
   final int id;
-  final int? remoteId;
+  final String? remoteId;
   final int projectId;
-  final int? remoteProjectId;
+  final String? remoteProjectId;
   final String title;
   final String color;
   final int orderIdx;
@@ -192,9 +201,9 @@ class KanbanColumn {
 
   KanbanColumn copyWith({
     int? id,
-    int? remoteId,
+    String? remoteId,
     int? projectId,
-    int? remoteProjectId,
+    String? remoteProjectId,
     String? title,
     String? color,
     int? orderIdx,
@@ -227,9 +236,9 @@ class KanbanColumn {
 
   factory KanbanColumn.fromMap(Map<String, dynamic> map) => KanbanColumn(
         id: map['id'] as int,
-        remoteId: map['remote_id'] as int?,
+        remoteId: map['remote_id'] as String?,
         projectId: map['project_id'] as int? ?? 0,
-        remoteProjectId: map['remote_project_id'] as int?,
+        remoteProjectId: map['remote_project_id'] as String?,
         title: map['title'] as String? ?? '',
         color: map['color'] as String? ?? '#1a1a2e',
         orderIdx: map['order_idx'] as int? ?? 0,
@@ -242,14 +251,20 @@ class KanbanColumn {
   ) =>
       KanbanColumn(
         id: 0,
-        remoteId: _toInt(json['id']),
+        remoteId: json['id'] as String?,
         projectId: localProjectId,
-        remoteProjectId: _toInt(json['project_id']),
+        remoteProjectId: json['kanban_project_id'] as String?,
         title: json['title'] as String? ?? '',
         color: json['color'] as String? ?? '#1a1a2e',
-        orderIdx: _toInt(json['order_idx']) ?? 0,
+        orderIdx: (json['order'] as num?)?.toInt() ?? 0,
         syncStatus: 'synced',
       );
+
+  Map<String, dynamic> toApiPayload() => {
+        'kanban_project_id': remoteProjectId,
+        'title': title,
+        'color': color,
+      };
 }
 
 class KanbanCard {
@@ -266,9 +281,9 @@ class KanbanCard {
   });
 
   final int id;
-  final int? remoteId;
+  final String? remoteId;
   final int columnId;
-  final int? remoteColumnId;
+  final String? remoteColumnId;
   final String title;
   final String description;
   final String? dueDate;
@@ -277,9 +292,9 @@ class KanbanCard {
 
   KanbanCard copyWith({
     int? id,
-    int? remoteId,
+    String? remoteId,
     int? columnId,
-    int? remoteColumnId,
+    String? remoteColumnId,
     String? title,
     String? description,
     String? dueDate,
@@ -313,9 +328,9 @@ class KanbanCard {
 
   factory KanbanCard.fromMap(Map<String, dynamic> map) => KanbanCard(
         id: map['id'] as int,
-        remoteId: map['remote_id'] as int?,
+        remoteId: map['remote_id'] as String?,
         columnId: map['column_id'] as int? ?? 0,
-        remoteColumnId: map['remote_column_id'] as int?,
+        remoteColumnId: map['remote_column_id'] as String?,
         title: map['title'] as String? ?? '',
         description: map['description'] as String? ?? '',
         dueDate: map['due_date'] as String?,
@@ -329,13 +344,20 @@ class KanbanCard {
   ) =>
       KanbanCard(
         id: 0,
-        remoteId: _toInt(json['id']),
+        remoteId: json['id'] as String?,
         columnId: localColumnId,
-        remoteColumnId: _toInt(json['column_id']),
+        remoteColumnId: json['kanban_column_id'] as String?,
         title: json['title'] as String? ?? '',
         description: json['description'] as String? ?? '',
         dueDate: json['due_date'] as String?,
-        orderIdx: _toInt(json['order_idx']) ?? 0,
+        orderIdx: (json['order'] as num?)?.toInt() ?? 0,
         syncStatus: 'synced',
       );
+
+  Map<String, dynamic> toApiPayload() => {
+        'kanban_column_id': remoteColumnId,
+        'title': title,
+        'description': description,
+        if (dueDate != null) 'due_date': dueDate,
+      };
 }

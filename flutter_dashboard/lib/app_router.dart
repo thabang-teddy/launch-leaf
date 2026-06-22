@@ -5,6 +5,7 @@ import 'providers/auth_provider.dart';
 import 'screens/contact/contact_detail_screen.dart';
 import 'screens/contact/contact_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/kanban/kanban_board_screen.dart';
 import 'screens/kanban/kanban_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/notes/note_editor_screen.dart';
@@ -90,6 +91,16 @@ GoRouter buildRouter() {
           GoRoute(
             path: '/kanban',
             builder: (context, state) => const KanbanScreen(),
+            routes: [
+              GoRoute(
+                path: 'board/:id',
+                builder: (context, state) {
+                  final idStr = state.pathParameters['id'] ?? '';
+                  final id = int.tryParse(idStr) ?? 0;
+                  return KanbanBoardScreen(projectId: id);
+                },
+              ),
+            ],
           ),
         ],
       ),

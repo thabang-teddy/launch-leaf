@@ -21,7 +21,7 @@ class ContactProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await SyncService.instance.syncContacts();
+      await SyncService.instance.pullContacts();
     } catch (_) {
       // Sync failed — will display whatever is already in local DB.
     }
