@@ -1,40 +1,33 @@
-#define MyAppName "LaunchLeaf"
-#define MyAppVersion "1.0.0"
-#define MyAppPublisher "Thabang Teddy Morwasetla"
-#define MyAppExeName "flutter_dashboard.exe"
-#define SourceDir "..\build\windows\x64\runner\Release"
-
 [Setup]
-AppId={{A7B3C2D1-4E5F-6789-ABCD-EF0123456789}
-AppName={#MyAppName}
-AppVersion={#MyAppVersion}
-AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\{#MyAppName}
-DefaultGroupName={#MyAppName}
-AllowNoIcons=yes
-OutputDir=..\build\windows\installer
-OutputBaseFilename=launch-leaf-v{#MyAppVersion}-setup
+AppName=LaunchLeaf
+AppVersion=1.0.1
+AppPublisher=Thabang Teddy Morwasetla
+DefaultDirName={autopf}\LaunchLeaf
+DefaultGroupName=LaunchLeaf
+OutputDir=C:\Users\Teddy\projects\launch-leaf\laravel\public\downloads
+OutputBaseFilename=launch-leaf-v1.0.1-setup
 Compression=lzma2
 SolidCompression=yes
-WizardStyle=modern
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+ArchitecturesInstallIn64BitMode=x64compatible
+UninstallDisplayName=LaunchLeaf
+UninstallDisplayIcon={app}\flutter_dashboard.exe
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"
 
 [Files]
-Source: "{#SourceDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\*.dll"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
-Source: "{#SourceDir}\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Users\Teddy\projects\launch-leaf\flutter_dashboard\build\windows\x64\runner\Release\flutter_dashboard.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Teddy\projects\launch-leaf\flutter_dashboard\build\windows\x64\runner\Release\flutter_windows.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Teddy\projects\launch-leaf\flutter_dashboard\build\windows\x64\runner\Release\sqlite3.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "C:\Users\Teddy\projects\launch-leaf\flutter_dashboard\build\windows\x64\runner\Release\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{group}\LaunchLeaf"; Filename: "{app}\flutter_dashboard.exe"
+Name: "{group}\Uninstall LaunchLeaf"; Filename: "{uninstallexe}"
+Name: "{commondesktop}\LaunchLeaf"; Filename: "{app}\flutter_dashboard.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\flutter_dashboard.exe"; Description: "Launch LaunchLeaf"; Flags: nowait postinstall skipifsilent
