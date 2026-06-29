@@ -68,6 +68,8 @@ Route::get('/pages/{slug}', [FrontendPageController::class, 'show'])->name('page
 
 Route::get('/download/apk', [DashDownloadController::class, 'apk'])->name('download.apk');
 Route::get('/download/exe', [DashDownloadController::class, 'exe'])->name('download.exe');
+Route::get('/download/apk/{version}', [DashDownloadController::class, 'apkVersion'])->name('download.apk.version');
+Route::get('/download/exe/{version}', [DashDownloadController::class, 'exeVersion'])->name('download.exe.version');
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Dashboard (auth-protected)

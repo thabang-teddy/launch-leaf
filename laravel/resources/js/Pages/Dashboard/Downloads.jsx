@@ -127,8 +127,76 @@ function DownloadCard({ icon, platform, filename, description, available, url, s
     );
 }
 
+// ── Older versions table ──────────────────────────────────────────────────────
+function OlderVersionsSection({ versions }) {
+    if (!versions || versions.length === 0) return null;
+
+    return (
+        <div style={{ background: 'white', border: '1.5px solid #ebebeb', borderRadius: 14, padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', marginBottom: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+                <Ico name="clock" size={17} color="#6c757d" />
+                <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>
+                    Older Versions
+                </h2>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1.5px solid #ebebeb' }}>
+                            <th style={{ textAlign: 'left', padding: '8px 12px', color: '#999', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Version</th>
+                            <th style={{ textAlign: 'left', padding: '8px 12px', color: '#999', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Android APK</th>
+                            <th style={{ textAlign: 'left', padding: '8px 12px', color: '#999', fontWeight: 600, fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Windows Installer</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {versions.map(v => (
+                            <tr key={v.version} style={{ borderBottom: '1px solid #f4f4f4' }}>
+                                <td style={{ padding: '10px 12px', fontWeight: 600, color: '#1a1a2e', fontFamily: 'monospace' }}>
+                                    v{v.version}
+                                </td>
+                                <td style={{ padding: '10px 12px' }}>
+                                    {v.apkAvailable ? (
+                                        <a
+                                            href={v.apkUrl}
+                                            download
+                                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#3ddc84', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}
+                                            onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                                        >
+                                            <Ico name="download" size={13} color="#3ddc84" />
+                                            .apk{v.apkSize ? ` (${v.apkSize} MB)` : ''}
+                                        </a>
+                                    ) : (
+                                        <span style={{ color: '#ccc', fontSize: 13 }}>—</span>
+                                    )}
+                                </td>
+                                <td style={{ padding: '10px 12px' }}>
+                                    {v.exeAvailable ? (
+                                        <a
+                                            href={v.exeUrl}
+                                            download
+                                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#0078d4', fontWeight: 600, textDecoration: 'none', fontSize: 13 }}
+                                            onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+                                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                                        >
+                                            <Ico name="download" size={13} color="#0078d4" />
+                                            -setup.exe{v.exeSize ? ` (${v.exeSize} MB)` : ''}
+                                        </a>
+                                    ) : (
+                                        <span style={{ color: '#ccc', fontSize: 13 }}>—</span>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function Downloads({ version, apkAvailable, exeAvailable, apkUrl, exeUrl, apkSize, exeSize }) {
+export default function Downloads({ version, apkAvailable, exeAvailable, apkUrl, exeUrl, apkSize, exeSize, olderVersions = [] }) {
     const buildInstructions = [
         { label: 'Build Android APK', cmd: 'flutter build apk --release' },
         { label: 'Build Windows exe', cmd: 'flutter build windows --release' },
@@ -178,6 +246,9 @@ export default function Downloads({ version, apkAvailable, exeAvailable, apkUrl,
                     accentColor="#0078d4"
                 />
             </div>
+
+            {/* Older versions */}
+            <OlderVersionsSection versions={olderVersions} />
 
             {/* Build instructions */}
             <div style={{ background: 'white', border: '1.5px solid #ebebeb', borderRadius: 14, padding: '24px 28px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
