@@ -56,7 +56,7 @@ class TasksProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final draft = TaskModel(
       id: 0,
       title: title,
@@ -81,7 +81,7 @@ class TasksProvider extends ChangeNotifier {
     required String description,
     String? dueDate,
   }) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final updated = task.copyWith(
       title: title,
       description: description,

@@ -29,8 +29,7 @@ class SyncService {
         data: {'changes': pending.map((c) => c.toApiPayload()).toList()},
       );
 
-      final resultsJson =
-          response.data?['results'] as List<dynamic>? ?? [];
+      final resultsJson = response.data?['results'] as List<dynamic>? ?? [];
 
       for (final resultJson in resultsJson) {
         final result = SyncChangeResult.fromJson(
@@ -40,6 +39,11 @@ class SyncService {
         if (result.syncedSuccess) {
           if (result.actionType == 'create' && result.remoteId != null) {
             await _db.updateRemoteId(
+              result.tableName,
+              result.localId,
+              result.remoteId!,
+            );
+            await _db.updateChildRemoteReferences(
               result.tableName,
               result.localId,
               result.remoteId!,
@@ -62,34 +66,43 @@ class SyncService {
     final data = result.data!;
     switch (result.tableName) {
       case 'notes':
-        final note =
-            NoteModel.fromApi(data).copyWith(id: result.localId, syncStatus: 'synced');
+        final note = NoteModel.fromApi(
+          data,
+        ).copyWith(id: result.localId, syncStatus: 'synced');
         await _db.updateNote(note);
       case 'tasks':
-        final task =
-            TaskModel.fromApi(data).copyWith(id: result.localId, syncStatus: 'synced');
+        final task = TaskModel.fromApi(
+          data,
+        ).copyWith(id: result.localId, syncStatus: 'synced');
         await _db.updateTask(task);
       case 'kanban_boards':
-        final board =
-            KanbanBoard.fromApi(data).copyWith(id: result.localId, syncStatus: 'synced');
+        final board = KanbanBoard.fromApi(
+          data,
+        ).copyWith(id: result.localId, syncStatus: 'synced');
         await _db.updateBoard(board);
       case 'kanban_projects':
         final existing = await _db.getProjectById(result.localId);
         if (existing == null) return;
-        final project = KanbanProject.fromApi(data, existing.boardId)
-            .copyWith(id: result.localId, syncStatus: 'synced');
+        final project = KanbanProject.fromApi(
+          data,
+          existing.boardId,
+        ).copyWith(id: result.localId, syncStatus: 'synced');
         await _db.updateProject(project);
       case 'kanban_columns':
         final existing = await _db.getColumnById(result.localId);
         if (existing == null) return;
-        final column = KanbanColumn.fromApi(data, existing.projectId)
-            .copyWith(id: result.localId, syncStatus: 'synced');
+        final column = KanbanColumn.fromApi(
+          data,
+          existing.projectId,
+        ).copyWith(id: result.localId, syncStatus: 'synced');
         await _db.updateColumn(column);
       case 'kanban_cards':
         final existing = await _db.getCardById(result.localId);
         if (existing == null) return;
-        final card = KanbanCard.fromApi(data, existing.columnId)
-            .copyWith(id: result.localId, syncStatus: 'synced');
+        final card = KanbanCard.fromApi(
+          data,
+          existing.columnId,
+        ).copyWith(id: result.localId, syncStatus: 'synced');
         await _db.updateCard(card);
     }
   }
@@ -126,7 +139,8 @@ class SyncService {
     await _db.clearContacts();
     for (final item in list) {
       await _db.insertContact(
-          ContactModel.fromApi(item as Map<String, dynamic>));
+        ContactModel.fromApi(item as Map<String, dynamic>),
+      );
     }
   }
 
@@ -135,8 +149,9 @@ class SyncService {
     final data = response.data;
     if (data == null) return;
 
-    final List<dynamic> boardsJson =
-        data is List ? data : (data['data'] as List? ?? []);
+    final List<dynamic> boardsJson = data is List
+        ? data
+        : (data['data'] as List? ?? []);
 
     await _db.clearKanban();
 
@@ -157,10 +172,11 @@ class SyncService {
           final column = KanbanColumn.fromApi(columnMap, projectId);
           final columnId = await _db.insertColumn(column);
 
-          for (final cardJson
-              in (columnMap['cards'] as List<dynamic>? ?? [])) {
+          for (final cardJson in (columnMap['cards'] as List<dynamic>? ?? [])) {
             final card = KanbanCard.fromApi(
-                cardJson as Map<String, dynamic>, columnId);
+              cardJson as Map<String, dynamic>,
+              columnId,
+            );
             await _db.insertCard(card);
           }
         }
@@ -169,18 +185,13 @@ class SyncService {
   }
 
   Future<void> pullAll() async {
-    await Future.wait([
-      pullNotes(),
-      pullTasks(),
-      pullContacts(),
-      pullKanban(),
-    ]);
+    await Future.wait([pullNotes(), pullTasks(), pullContacts(), pullKanban()]);
   }
 
   // ─── Notes ────────────────────────────────────────────────────────────────
 
   Future<NoteModel> createNote(NoteModel note) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final toInsert = note.copyWith(
       syncStatus: 'synced',
       createdAt: note.createdAt.isEmpty ? now : note.createdAt,
@@ -188,47 +199,53 @@ class SyncService {
     );
     final localId = await _db.insertNote(toInsert);
     final saved = toInsert.copyWith(id: localId);
-    await _db.upsertChange(SyncChange(
-      localId: localId,
-      remoteId: saved.remoteId?.toString(),
-      tableName: 'notes',
-      actionType: 'create',
-      datetime: saved.updatedAt,
-      data: jsonEncode(saved.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: localId,
+        remoteId: saved.remoteId?.toString(),
+        tableName: 'notes',
+        actionType: 'create',
+        datetime: saved.updatedAt,
+        data: jsonEncode(saved.toMap()),
+      ),
+    );
     return saved;
   }
 
   Future<void> updateNote(NoteModel note) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final updated = note.copyWith(updatedAt: now, syncStatus: 'synced');
     await _db.updateNote(updated);
-    await _db.upsertChange(SyncChange(
-      localId: updated.id,
-      remoteId: updated.remoteId?.toString(),
-      tableName: 'notes',
-      actionType: 'update',
-      datetime: updated.updatedAt,
-      data: jsonEncode(updated.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: updated.id,
+        remoteId: updated.remoteId?.toString(),
+        tableName: 'notes',
+        actionType: 'update',
+        datetime: updated.updatedAt,
+        data: jsonEncode(updated.toMap()),
+      ),
+    );
   }
 
   Future<void> deleteNote(NoteModel note) async {
     await _db.deleteNote(note.id);
-    await _db.upsertChange(SyncChange(
-      localId: note.id,
-      remoteId: note.remoteId?.toString(),
-      tableName: 'notes',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(note.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: note.id,
+        remoteId: note.remoteId?.toString(),
+        tableName: 'notes',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(note.toMap()),
+      ),
+    );
   }
 
   // ─── Tasks ────────────────────────────────────────────────────────────────
 
   Future<TaskModel> createTask(TaskModel task) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final toInsert = task.copyWith(
       syncStatus: 'synced',
       createdAt: task.createdAt.isEmpty ? now : task.createdAt,
@@ -236,33 +253,37 @@ class SyncService {
     );
     final localId = await _db.insertTask(toInsert);
     final saved = toInsert.copyWith(id: localId);
-    await _db.upsertChange(SyncChange(
-      localId: localId,
-      remoteId: saved.remoteId?.toString(),
-      tableName: 'tasks',
-      actionType: 'create',
-      datetime: saved.updatedAt,
-      data: jsonEncode(saved.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: localId,
+        remoteId: saved.remoteId?.toString(),
+        tableName: 'tasks',
+        actionType: 'create',
+        datetime: saved.updatedAt,
+        data: jsonEncode(saved.toMap()),
+      ),
+    );
     return saved;
   }
 
   Future<void> updateTask(TaskModel task) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final updated = task.copyWith(updatedAt: now, syncStatus: 'synced');
     await _db.updateTask(updated);
-    await _db.upsertChange(SyncChange(
-      localId: updated.id,
-      remoteId: updated.remoteId?.toString(),
-      tableName: 'tasks',
-      actionType: 'update',
-      datetime: updated.updatedAt,
-      data: jsonEncode(updated.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: updated.id,
+        remoteId: updated.remoteId?.toString(),
+        tableName: 'tasks',
+        actionType: 'update',
+        datetime: updated.updatedAt,
+        data: jsonEncode(updated.toMap()),
+      ),
+    );
   }
 
   Future<TaskModel> toggleTask(TaskModel task) async {
-    final now = DateTime.now().toIso8601String();
+    final now = DateTime.now().toUtc().toIso8601String();
     final toggled = TaskModel(
       id: task.id,
       remoteId: task.remoteId,
@@ -277,68 +298,80 @@ class SyncService {
       syncStatus: 'synced',
     );
     await _db.updateTask(toggled);
-    await _db.upsertChange(SyncChange(
-      localId: toggled.id,
-      remoteId: toggled.remoteId?.toString(),
-      tableName: 'tasks',
-      actionType: 'update',
-      datetime: now,
-      data: jsonEncode(toggled.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: toggled.id,
+        remoteId: toggled.remoteId?.toString(),
+        tableName: 'tasks',
+        actionType: 'update',
+        datetime: now,
+        data: jsonEncode(toggled.toMap()),
+      ),
+    );
     return toggled;
   }
 
   Future<void> deleteTask(TaskModel task) async {
     await _db.deleteTask(task.id);
-    await _db.upsertChange(SyncChange(
-      localId: task.id,
-      remoteId: task.remoteId?.toString(),
-      tableName: 'tasks',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(task.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: task.id,
+        remoteId: task.remoteId?.toString(),
+        tableName: 'tasks',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(task.toMap()),
+      ),
+    );
   }
 
   // ─── Contacts ─────────────────────────────────────────────────────────────
 
   Future<void> deleteContact(ContactModel contact) async {
     await _db.deleteContact(contact.id);
-    await _db.upsertChange(SyncChange(
-      localId: contact.id,
-      remoteId: contact.remoteId?.toString(),
-      tableName: 'contacts',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(contact.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: contact.id,
+        remoteId: contact.remoteId?.toString(),
+        tableName: 'contacts',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(contact.toMap()),
+      ),
+    );
   }
 
   // ─── Kanban Boards ────────────────────────────────────────────────────────
 
   Future<void> createBoard(KanbanBoard board) async {
     final localId = await _db.insertBoard(board.copyWith(syncStatus: 'synced'));
-    await _db.upsertChange(SyncChange(
-      localId: localId,
-      remoteId: board.remoteId,
-      tableName: 'kanban_boards',
-      actionType: 'create',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(board.copyWith(id: localId, syncStatus: 'synced').toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: localId,
+        remoteId: board.remoteId,
+        tableName: 'kanban_boards',
+        actionType: 'create',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(
+          board.copyWith(id: localId, syncStatus: 'synced').toMap(),
+        ),
+      ),
+    );
   }
 
   Future<void> updateBoard(KanbanBoard board) async {
     final updated = board.copyWith(syncStatus: 'synced');
     await _db.updateBoard(updated);
-    await _db.upsertChange(SyncChange(
-      localId: updated.id,
-      remoteId: updated.remoteId,
-      tableName: 'kanban_boards',
-      actionType: 'update',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(updated.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: updated.id,
+        remoteId: updated.remoteId,
+        tableName: 'kanban_boards',
+        actionType: 'update',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(updated.toMap()),
+      ),
+    );
   }
 
   Future<void> deleteBoard(KanbanBoard board) async {
@@ -351,43 +384,51 @@ class SyncService {
       await _db.deleteColumn(col.id);
     }
     await _db.deleteProject(board.id);
-    await _db.upsertChange(SyncChange(
-      localId: board.id,
-      remoteId: board.remoteId,
-      tableName: 'kanban_boards',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(board.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: board.id,
+        remoteId: board.remoteId,
+        tableName: 'kanban_boards',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(board.toMap()),
+      ),
+    );
   }
 
   // ─── Kanban Projects ──────────────────────────────────────────────────────
 
   Future<void> createProject(KanbanProject project) async {
-    final localId =
-        await _db.insertProject(project.copyWith(syncStatus: 'synced'));
-    await _db.upsertChange(SyncChange(
-      localId: localId,
-      remoteId: project.remoteId,
-      tableName: 'kanban_projects',
-      actionType: 'create',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(
-          project.copyWith(id: localId, syncStatus: 'synced').toMap()),
-    ));
+    final localId = await _db.insertProject(
+      project.copyWith(syncStatus: 'synced'),
+    );
+    await _db.upsertChange(
+      SyncChange(
+        localId: localId,
+        remoteId: project.remoteId,
+        tableName: 'kanban_projects',
+        actionType: 'create',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(
+          project.copyWith(id: localId, syncStatus: 'synced').toMap(),
+        ),
+      ),
+    );
   }
 
   Future<void> updateProject(KanbanProject project) async {
     final updated = project.copyWith(syncStatus: 'synced');
     await _db.updateProject(updated);
-    await _db.upsertChange(SyncChange(
-      localId: updated.id,
-      remoteId: updated.remoteId,
-      tableName: 'kanban_projects',
-      actionType: 'update',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(updated.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: updated.id,
+        remoteId: updated.remoteId,
+        tableName: 'kanban_projects',
+        actionType: 'update',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(updated.toMap()),
+      ),
+    );
   }
 
   Future<void> deleteProject(KanbanProject project) async {
@@ -400,43 +441,51 @@ class SyncService {
       await _db.deleteColumn(col.id);
     }
     await _db.deleteProject(project.id);
-    await _db.upsertChange(SyncChange(
-      localId: project.id,
-      remoteId: project.remoteId,
-      tableName: 'kanban_projects',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(project.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: project.id,
+        remoteId: project.remoteId,
+        tableName: 'kanban_projects',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(project.toMap()),
+      ),
+    );
   }
 
   // ─── Kanban Columns ───────────────────────────────────────────────────────
 
   Future<void> createColumn(KanbanColumn column) async {
-    final localId =
-        await _db.insertColumn(column.copyWith(syncStatus: 'synced'));
-    await _db.upsertChange(SyncChange(
-      localId: localId,
-      remoteId: column.remoteId,
-      tableName: 'kanban_columns',
-      actionType: 'create',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(
-          column.copyWith(id: localId, syncStatus: 'synced').toMap()),
-    ));
+    final localId = await _db.insertColumn(
+      column.copyWith(syncStatus: 'synced'),
+    );
+    await _db.upsertChange(
+      SyncChange(
+        localId: localId,
+        remoteId: column.remoteId,
+        tableName: 'kanban_columns',
+        actionType: 'create',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(
+          column.copyWith(id: localId, syncStatus: 'synced').toMap(),
+        ),
+      ),
+    );
   }
 
   Future<void> updateColumn(KanbanColumn column) async {
     final updated = column.copyWith(syncStatus: 'synced');
     await _db.updateColumn(updated);
-    await _db.upsertChange(SyncChange(
-      localId: updated.id,
-      remoteId: updated.remoteId,
-      tableName: 'kanban_columns',
-      actionType: 'update',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(updated.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: updated.id,
+        remoteId: updated.remoteId,
+        tableName: 'kanban_columns',
+        actionType: 'update',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(updated.toMap()),
+      ),
+    );
   }
 
   Future<void> deleteColumn(KanbanColumn column) async {
@@ -445,53 +494,62 @@ class SyncService {
       await _db.deleteCard(card.id);
     }
     await _db.deleteColumn(column.id);
-    await _db.upsertChange(SyncChange(
-      localId: column.id,
-      remoteId: column.remoteId,
-      tableName: 'kanban_columns',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(column.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: column.id,
+        remoteId: column.remoteId,
+        tableName: 'kanban_columns',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(column.toMap()),
+      ),
+    );
   }
 
   // ─── Kanban Cards ─────────────────────────────────────────────────────────
 
   Future<void> createCard(KanbanCard card) async {
     final localId = await _db.insertCard(card.copyWith(syncStatus: 'synced'));
-    await _db.upsertChange(SyncChange(
-      localId: localId,
-      remoteId: card.remoteId,
-      tableName: 'kanban_cards',
-      actionType: 'create',
-      datetime: DateTime.now().toIso8601String(),
-      data:
-          jsonEncode(card.copyWith(id: localId, syncStatus: 'synced').toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: localId,
+        remoteId: card.remoteId,
+        tableName: 'kanban_cards',
+        actionType: 'create',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(
+          card.copyWith(id: localId, syncStatus: 'synced').toMap(),
+        ),
+      ),
+    );
   }
 
   Future<void> updateCard(KanbanCard card) async {
     final updated = card.copyWith(syncStatus: 'synced');
     await _db.updateCard(updated);
-    await _db.upsertChange(SyncChange(
-      localId: updated.id,
-      remoteId: updated.remoteId,
-      tableName: 'kanban_cards',
-      actionType: 'update',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(updated.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: updated.id,
+        remoteId: updated.remoteId,
+        tableName: 'kanban_cards',
+        actionType: 'update',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(updated.toMap()),
+      ),
+    );
   }
 
   Future<void> deleteCard(KanbanCard card) async {
     await _db.deleteCard(card.id);
-    await _db.upsertChange(SyncChange(
-      localId: card.id,
-      remoteId: card.remoteId,
-      tableName: 'kanban_cards',
-      actionType: 'delete',
-      datetime: DateTime.now().toIso8601String(),
-      data: jsonEncode(card.toMap()),
-    ));
+    await _db.upsertChange(
+      SyncChange(
+        localId: card.id,
+        remoteId: card.remoteId,
+        tableName: 'kanban_cards',
+        actionType: 'delete',
+        datetime: DateTime.now().toUtc().toIso8601String(),
+        data: jsonEncode(card.toMap()),
+      ),
+    );
   }
 }

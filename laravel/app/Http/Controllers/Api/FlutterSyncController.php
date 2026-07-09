@@ -16,9 +16,19 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class FlutterSyncController extends Controller
 {
+    /**
+     * Remote ids of records created earlier in the current batch, keyed by
+     * table name and client-side local id. Lets a child change reference a
+     * parent that was created in the same request (offline hierarchy sync).
+     *
+     * @var array<string, array<int, string>>
+     */
+    private array $createdIds = [];
+
     public function sync(Request $request): JsonResponse
     {
         $request->validate([
@@ -30,10 +40,23 @@ class FlutterSyncController extends Controller
             'changes.*.data'        => ['required', 'array'],
         ]);
 
+        $this->createdIds = [];
         $results = [];
 
         foreach ($request->input('changes') as $change) {
-            $results[] = $this->processChange($change);
+            // One bad change must not abort the batch: report it as failed
+            // (client keeps it pending for retry) and keep processing.
+            try {
+                $results[] = $this->processChange($change);
+            } catch (\Throwable $e) {
+                Log::error('Sync change failed', [
+                    'table_name'  => $change['table_name'],
+                    'local_id'    => $change['local_id'],
+                    'action_type' => $change['action_type'],
+                    'error'       => $e->getMessage(),
+                ]);
+                $results[] = $this->failedResult($change);
+            }
         }
 
         return response()->json(['results' => $results]);
@@ -210,7 +233,7 @@ class FlutterSyncController extends Controller
     {
         if ($action === 'create') {
             $project = KanbanProject::create([
-                'kanban_board_id' => $data['remote_board_id'] ?? null,
+                'kanban_board_id' => $this->resolveParentId($data, 'remote_board_id', 'board_id', 'kanban_boards'),
                 'name'            => $data['name'] ?? '',
                 'description'     => $data['description'] ?? '',
                 'color'           => $data['color'] ?? '#e74c3c',
@@ -227,7 +250,7 @@ class FlutterSyncController extends Controller
 
         if (! $project) {
             $created = KanbanProject::create([
-                'kanban_board_id' => $data['remote_board_id'] ?? null,
+                'kanban_board_id' => $this->resolveParentId($data, 'remote_board_id', 'board_id', 'kanban_boards'),
                 'name'            => $data['name'] ?? '',
                 'description'     => $data['description'] ?? '',
                 'color'           => $data['color'] ?? '#e74c3c',
@@ -254,7 +277,7 @@ class FlutterSyncController extends Controller
     {
         if ($action === 'create') {
             $column = KanbanColumn::create([
-                'kanban_project_id' => $data['remote_project_id'] ?? null,
+                'kanban_project_id' => $this->resolveParentId($data, 'remote_project_id', 'project_id', 'kanban_projects'),
                 'title'             => $data['title'] ?? '',
                 'color'             => $data['color'] ?? '#1a1a2e',
             ]);
@@ -270,7 +293,7 @@ class FlutterSyncController extends Controller
 
         if (! $column) {
             $created = KanbanColumn::create([
-                'kanban_project_id' => $data['remote_project_id'] ?? null,
+                'kanban_project_id' => $this->resolveParentId($data, 'remote_project_id', 'project_id', 'kanban_projects'),
                 'title'             => $data['title'] ?? '',
                 'color'             => $data['color'] ?? '#1a1a2e',
             ]);
@@ -295,7 +318,7 @@ class FlutterSyncController extends Controller
     {
         if ($action === 'create') {
             $card = KanbanCard::create([
-                'kanban_column_id' => $data['remote_column_id'] ?? null,
+                'kanban_column_id' => $this->resolveParentId($data, 'remote_column_id', 'column_id', 'kanban_columns'),
                 'title'            => $data['title'] ?? '',
                 'description'      => $data['description'] ?? '',
                 'due_date'         => $data['due_date'] ?? null,
@@ -312,7 +335,7 @@ class FlutterSyncController extends Controller
 
         if (! $card) {
             $created = KanbanCard::create([
-                'kanban_column_id' => $data['remote_column_id'] ?? null,
+                'kanban_column_id' => $this->resolveParentId($data, 'remote_column_id', 'column_id', 'kanban_columns'),
                 'title'            => $data['title'] ?? '',
                 'description'      => $data['description'] ?? '',
                 'due_date'         => $data['due_date'] ?? null,
@@ -337,6 +360,10 @@ class FlutterSyncController extends Controller
 
     private function successResult(int $localId, string $tableName, string $actionType, Model $record): array
     {
+        if ($actionType === 'create') {
+            $this->createdIds[$tableName][$localId] = (string) $record->id;
+        }
+
         return [
             'local_id'       => $localId,
             'remote_id'      => (string) $record->id,
@@ -374,7 +401,45 @@ class FlutterSyncController extends Controller
         ];
     }
 
+    /**
+     * Result for a change that could not be applied (e.g. constraint
+     * violation). synced_success=false with data=null tells the client to
+     * keep the change record and retry on the next sync.
+     */
+    private function failedResult(array $change): array
+    {
+        return [
+            'local_id'       => (int) $change['local_id'],
+            'remote_id'      => $change['remote_id'] ?? null,
+            'table_name'     => $change['table_name'],
+            'action_type'    => $change['action_type'],
+            'datetime'       => Carbon::now()->toIso8601String(),
+            'data'           => null,
+            'synced_success' => false,
+        ];
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /**
+     * Resolves a child's parent remote id. Falls back to the parent's
+     * client-side local id when the parent was created earlier in this same
+     * batch and the client did not yet know its remote id.
+     */
+    private function resolveParentId(array $data, string $remoteKey, string $localKey, string $parentTable): ?string
+    {
+        $remote = $data[$remoteKey] ?? null;
+        if ($remote !== null && $remote !== '') {
+            return (string) $remote;
+        }
+
+        $localParentId = $data[$localKey] ?? null;
+        if ($localParentId === null) {
+            return null;
+        }
+
+        return $this->createdIds[$parentTable][(int) $localParentId] ?? null;
+    }
 
     private function isServerNewer(Model $record, string $datetime): bool
     {

@@ -67,12 +67,15 @@ class NotesProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> createNote({required String title, required String content}) async {
+  Future<void> createNote({
+    required String title,
+    required String content,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final now = DateTime.now().toIso8601String();
+      final now = DateTime.now().toUtc().toIso8601String();
       final draft = NoteModel(
         id: 0,
         title: title,
@@ -92,10 +95,18 @@ class NotesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateNote(NoteModel note, {required String title, required String content}) async {
+  Future<void> updateNote(
+    NoteModel note, {
+    required String title,
+    required String content,
+  }) async {
     try {
-      final now = DateTime.now().toIso8601String();
-      final updated = note.copyWith(title: title, content: content, updatedAt: now);
+      final now = DateTime.now().toUtc().toIso8601String();
+      final updated = note.copyWith(
+        title: title,
+        content: content,
+        updatedAt: now,
+      );
       await SyncService.instance.updateNote(updated);
       final idx = _notes.indexWhere((n) => n.id == note.id);
       if (idx != -1) {

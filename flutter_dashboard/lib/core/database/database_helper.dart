@@ -1,3 +1,9 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../../models/contact_model.dart';
@@ -12,20 +18,46 @@ class DatabaseHelper {
 
   Database? _database;
 
+  /// Test-only override so unit tests can point at an in-memory database
+  /// (path_provider has no platform implementation under `flutter test`).
+  @visibleForTesting
+  static String? debugDatabasePath;
+
   Future<Database> get database async {
     _database ??= await _initDatabase();
     return _database!;
   }
 
   Future<Database> _initDatabase() async {
-    final path = await getDatabasesPath();
-    final dbPath = '$path/launch_leaf.db';
+    final dbPath = await _resolveDatabasePath();
     return openDatabase(
       dbPath,
       version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
+  }
+
+  /// Resolves a writable path for the SQLite file.
+  ///
+  /// On desktop (Windows/Linux/macOS) `getDatabasesPath()` under
+  /// `sqflite_common_ffi` resolves to the process working directory, which is
+  /// the read-only install location for a packaged app — opening the database
+  /// there fails with SQLITE_CANTOPEN (code 14). Use the per-user application
+  /// support directory instead and ensure it exists before opening.
+  Future<String> _resolveDatabasePath() async {
+    if (debugDatabasePath != null) return debugDatabasePath!;
+    if (!kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      final supportDir = await getApplicationSupportDirectory();
+      if (!await supportDir.exists()) {
+        await supportDir.create(recursive: true);
+      }
+      return p.join(supportDir.path, 'launch_leaf.db');
+    }
+
+    final path = await getDatabasesPath();
+    return p.join(path, 'launch_leaf.db');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -171,16 +203,21 @@ class DatabaseHelper {
     final notes = count(await db.rawQuery('SELECT COUNT(*) FROM notes'));
     final tasksTotal = count(await db.rawQuery('SELECT COUNT(*) FROM tasks'));
     final tasksPending = count(
-        await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 0'));
+      await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 0'),
+    );
     final tasksDone = count(
-        await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 1'));
-    final contactsTotal =
-        count(await db.rawQuery('SELECT COUNT(*) FROM contacts'));
+      await db.rawQuery('SELECT COUNT(*) FROM tasks WHERE is_completed = 1'),
+    );
+    final contactsTotal = count(
+      await db.rawQuery('SELECT COUNT(*) FROM contacts'),
+    );
     const contactsPending = 0;
-    final kanbanBoards =
-        count(await db.rawQuery('SELECT COUNT(*) FROM kanban_boards'));
-    final kanbanCards =
-        count(await db.rawQuery('SELECT COUNT(*) FROM kanban_cards'));
+    final kanbanBoards = count(
+      await db.rawQuery('SELECT COUNT(*) FROM kanban_boards'),
+    );
+    final kanbanCards = count(
+      await db.rawQuery('SELECT COUNT(*) FROM kanban_cards'),
+    );
 
     return {
       'notes': notes,
@@ -271,17 +308,88 @@ class DatabaseHelper {
     await db.delete('sync_changes');
   }
 
+  static const _syncableTables = {
+    'notes',
+    'tasks',
+    'contacts',
+    'kanban_boards',
+    'kanban_projects',
+    'kanban_columns',
+    'kanban_cards',
+  };
+
+  /// Maps a parent table to its child table and the local/remote FK columns
+  /// that reference the parent. Used to back-fill children after the parent's
+  /// create has synced and the server assigned it a remote id.
+  static const _childLinks = {
+    'kanban_boards': (
+      childTable: 'kanban_projects',
+      localFk: 'board_id',
+      remoteFk: 'remote_board_id',
+    ),
+    'kanban_projects': (
+      childTable: 'kanban_columns',
+      localFk: 'project_id',
+      remoteFk: 'remote_project_id',
+    ),
+    'kanban_columns': (
+      childTable: 'kanban_cards',
+      localFk: 'column_id',
+      remoteFk: 'remote_column_id',
+    ),
+  };
+
   /// Sets remote_id on a local item after a successful create sync.
   Future<void> updateRemoteId(
     String tableName,
     int localId,
     String remoteId,
   ) async {
+    if (!_syncableTables.contains(tableName)) return;
     final db = await database;
-    await db.rawUpdate(
-      'UPDATE $tableName SET remote_id = ? WHERE id = ?',
-      [remoteId, localId],
+    await db.rawUpdate('UPDATE $tableName SET remote_id = ? WHERE id = ?', [
+      remoteId,
+      localId,
+    ]);
+  }
+
+  /// After a parent create syncs, stamps the parent's new remote id onto its
+  /// children — both the child rows and any pending change payloads — so
+  /// child creates recorded before the parent synced no longer reference a
+  /// null parent.
+  Future<void> updateChildRemoteReferences(
+    String parentTable,
+    int parentLocalId,
+    String parentRemoteId,
+  ) async {
+    final link = _childLinks[parentTable];
+    if (link == null) return;
+
+    final db = await database;
+    await db.update(
+      link.childTable,
+      {link.remoteFk: parentRemoteId},
+      where: '${link.localFk} = ?',
+      whereArgs: [parentLocalId],
     );
+
+    final pendingChanges = await db.query(
+      'sync_changes',
+      where: 'table_name = ?',
+      whereArgs: [link.childTable],
+    );
+    for (final row in pendingChanges) {
+      final data = jsonDecode(row['data'] as String) as Map<String, dynamic>;
+      if (data[link.localFk] == parentLocalId && data[link.remoteFk] == null) {
+        data[link.remoteFk] = parentRemoteId;
+        await db.update(
+          'sync_changes',
+          {'data': jsonEncode(data)},
+          where: 'id = ?',
+          whereArgs: [row['id']],
+        );
+      }
+    }
   }
 
   // ─── Notes ────────────────────────────────────────────────────────────────
@@ -344,8 +452,10 @@ class DatabaseHelper {
 
   Future<List<TaskModel>> getTasks() async {
     final db = await database;
-    final rows =
-        await db.query('tasks', orderBy: 'order_idx ASC, created_at DESC');
+    final rows = await db.query(
+      'tasks',
+      orderBy: 'order_idx ASC, created_at DESC',
+    );
     return rows.map(TaskModel.fromMap).toList();
   }
 
