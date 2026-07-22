@@ -76,6 +76,8 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
 
     // Content CRUD
     Route::resource('portfolio',  DashPortfolioController::class);
+    Route::patch('portfolio/{portfolio}/toggle-active', [DashPortfolioController::class, 'toggleActive'])
+        ->name('portfolio.toggle-active');
     Route::resource('experience', DashExperienceController::class);
     Route::resource('skills',     DashSkillController::class);
     Route::resource('pages',      PageController::class);

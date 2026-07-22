@@ -90,6 +90,15 @@ class PortfolioController extends Controller
         return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item updated.');
     }
 
+    public function toggleActive(Portfolio $portfolio): RedirectResponse
+    {
+        $portfolio->update(['is_active' => ! $portfolio->is_active]);
+
+        $state = $portfolio->is_active ? 'activated' : 'deactivated';
+
+        return redirect()->route('dashboard.portfolio.index')->with('success', "Portfolio item {$state}.");
+    }
+
     public function destroy(Portfolio $portfolio): RedirectResponse
     {
         $portfolio->delete();

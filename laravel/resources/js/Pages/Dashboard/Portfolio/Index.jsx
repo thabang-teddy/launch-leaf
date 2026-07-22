@@ -57,6 +57,13 @@ export default function PortfolioIndex({ items }) {
         }
     };
 
+    const toggleActive = (item) => {
+        router.patch(route('dashboard.portfolio.toggle-active', item.id), {}, {
+            preserveScroll: true,
+            preserveState: true,
+        });
+    };
+
     const askDelete = (id) => setModal({ id });
     const handleConfirm = () => {
         if (selected?.id === modal.id) closePanel();
@@ -122,10 +129,19 @@ export default function PortfolioIndex({ items }) {
                                         <td className="align-middle fw-semibold">{item.title}</td>
                                         <td className="align-middle small">{toStackString(item.tech_stack) || '—'}</td>
                                         <td className="align-middle">{item.order}</td>
-                                        <td className="align-middle">
-                                            <span className={`badge ${item.is_active ? 'bg-success' : 'bg-secondary'}`}>
-                                                {item.is_active ? 'Yes' : 'No'}
-                                            </span>
+                                        <td className="align-middle" onClick={e => e.stopPropagation()}>
+                                            <div className="form-check form-switch mb-0">
+                                                <input
+                                                    type="checkbox"
+                                                    role="switch"
+                                                    className="form-check-input"
+                                                    style={{ cursor: 'pointer' }}
+                                                    checked={item.is_active}
+                                                    onChange={() => toggleActive(item)}
+                                                    aria-label={`Toggle active state for ${item.title}`}
+                                                    title={item.is_active ? 'Active — click to hide from site' : 'Inactive — click to show on site'}
+                                                />
+                                            </div>
                                         </td>
                                         <td className="align-middle text-end" onClick={e => e.stopPropagation()}>
                                             <button onClick={() => askDelete(item.id)} className="btn btn-outline-danger btn-sm">Delete</button>
