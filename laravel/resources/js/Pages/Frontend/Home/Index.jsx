@@ -133,23 +133,17 @@ export default function Home({ personalInfo, skills }) {
             <section className="ll-section">
                 <div className="container">
                     <div className="row g-4">
-                        <div className="col-md-4 text-center">
+                        <div className="col-md-6 text-center">
                             <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>🖼️</div>
                             <h5 className="fw-700 text-dark-ll mb-2">Portfolio</h5>
                             <p className="text-muted-ll small mb-3">A selection of projects I've built and shipped.</p>
                             <Link href={route('portfolio.index')} className="btn-outline-accent">Browse Work</Link>
                         </div>
-                        <div className="col-md-4 text-center">
+                        <div className="col-md-6 text-center">
                             <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>💼</div>
                             <h5 className="fw-700 text-dark-ll mb-2">Experience</h5>
                             <p className="text-muted-ll small mb-3">Where I've worked and what I've studied.</p>
                             <Link href={route('experience.index')} className="btn-outline-accent">See Journey</Link>
-                        </div>
-                        <div className="col-md-4 text-center">
-                            <div style={{ fontSize: '2rem', marginBottom: '0.75rem' }}>✍️</div>
-                            <h5 className="fw-700 text-dark-ll mb-2">Tips</h5>
-                            <p className="text-muted-ll small mb-3">Problems I've solved, written down for later.</p>
-                            <Link href={route('tips.index')} className="btn-outline-accent">Read Tips</Link>
                         </div>
                     </div>
                 </div>

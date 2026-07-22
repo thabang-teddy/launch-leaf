@@ -4,12 +4,10 @@ use Illuminate\Support\Facades\Route;
 
 // ─── Frontend (public) controllers ───────────────────────────────────────────
 use App\Http\Controllers\Frontend\HomeController;
-use App\Http\Controllers\Frontend\ProjectController;
 use App\Http\Controllers\Frontend\AccountController;
 use App\Http\Controllers\Frontend\PortfolioController;
 use App\Http\Controllers\Frontend\ExperienceController;
 use App\Http\Controllers\Frontend\PersonalInfoController;
-use App\Http\Controllers\Frontend\TipController;
 use App\Http\Controllers\Frontend\ContactController;
 use App\Http\Controllers\Frontend\PageController as FrontendPageController;
 
@@ -19,13 +17,11 @@ use App\Http\Controllers\Dashboard\NoteController;
 use App\Http\Controllers\Dashboard\KanbanColumnController;
 use App\Http\Controllers\Dashboard\KanbanCardController;
 use App\Http\Controllers\Dashboard\TaskController;
-use App\Http\Controllers\Dashboard\ProjectController        as DashProjectController;
 use App\Http\Controllers\Dashboard\AccountController       as DashAccountController;
 use App\Http\Controllers\Dashboard\PortfolioController     as DashPortfolioController;
 use App\Http\Controllers\Dashboard\ExperienceController    as DashExperienceController;
 use App\Http\Controllers\Dashboard\PersonalInfoController  as DashPersonalInfoController;
 use App\Http\Controllers\Dashboard\SkillController         as DashSkillController;
-use App\Http\Controllers\Dashboard\TipController           as DashTipController;
 use App\Http\Controllers\Dashboard\ContactController       as DashContactController;
 use App\Http\Controllers\Dashboard\GitHubSyncController;
 use App\Http\Controllers\Dashboard\KanbanBoardController;
@@ -40,9 +36,6 @@ use App\Http\Controllers\Dashboard\DownloadController as DashDownloadController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/projects',        [ProjectController::class, 'index'])->name('projects.index');
-Route::get('/projects/{slug}', [ProjectController::class, 'show'])->name('projects.show');
-
 Route::get('/accounts',        [AccountController::class, 'index'])->name('accounts.index');
 Route::get('/accounts/{slug}', [AccountController::class, 'show'])->name('accounts.show');
 
@@ -53,9 +46,6 @@ Route::get('/experience',        [ExperienceController::class, 'index'])->name('
 Route::get('/experience/{slug}', [ExperienceController::class, 'show'])->name('experience.show');
 
 Route::get('/about', [PersonalInfoController::class, 'index'])->name('about');
-
-Route::get('/tips',        [TipController::class, 'index'])->name('tips.index');
-Route::get('/tips/{slug}', [TipController::class, 'show'])->name('tips.show');
 
 Route::get('/contact',  [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
@@ -79,11 +69,6 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
 
     Route::get('/', [DashHomeController::class, 'index'])->name('home');
 
-    // GitHub Projects — CRUD + sync
-    Route::resource('projects',   DashProjectController::class);
-    Route::post('projects/{project}/sync', [GitHubSyncController::class, 'syncProject'])
-        ->name('projects.sync');
-
     // Other Accounts — CRUD + sync
     Route::resource('accounts',   DashAccountController::class);
     Route::post('accounts/{account}/sync', [GitHubSyncController::class, 'syncAccount'])
@@ -93,7 +78,6 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::resource('portfolio',  DashPortfolioController::class);
     Route::resource('experience', DashExperienceController::class);
     Route::resource('skills',     DashSkillController::class);
-    Route::resource('tips',       DashTipController::class);
     Route::resource('pages',      PageController::class);
     Route::resource('notes',      NoteController::class);
 

@@ -1,6 +1,6 @@
 # LaunchLeaf
 
-Personal portfolio + admin dashboard. The public site exposes portfolio, GitHub projects, experience, tips, and a contact form. The password-protected dashboard manages all content and provides personal productivity tools (Kanban, tasks, notes).
+Personal portfolio + admin dashboard. The public site exposes portfolio, other accounts, experience, and a contact form. The password-protected dashboard manages all content and provides personal productivity tools (Kanban, tasks, notes).
 
 ## Tech Stack
 
@@ -54,8 +54,6 @@ launch-leaf/                      # Git root
 | URL | Page | Notes |
 |-----|------|-------|
 | `/` | Home | |
-| `/projects` | GitHub Projects listing | |
-| `/projects/{slug}` | Project detail | Shows README + file tree from cached GitHub data |
 | `/accounts` | Other accounts listing | |
 | `/accounts/{slug}` | Account detail | Shows README + file tree |
 | `/portfolio` | Portfolio listing | |
@@ -63,8 +61,6 @@ launch-leaf/                      # Git root
 | `/experience` | Experience listing | |
 | `/experience/{slug}` | Experience detail | |
 | `/cv` | Personal info / CV | Single-record page |
-| `/tips` | Tips listing | |
-| `/tips/{slug}` | Tip detail | |
 | `/contact` | Contact form | Saves to DB, notifies via email |
 
 ## Dashboard Routes (auth-protected `/dashboard/*`)
@@ -75,12 +71,10 @@ launch-leaf/                      # Git root
 | Notes | Freeform notes |
 | Kanban | Project board (columns + cards) |
 | Tasks | Checklist items |
-| GitHub Projects | CRUD + GitHub sync (trigger re-fetch) |
 | Other Accounts | CRUD + GitHub sync |
 | Portfolio | CRUD |
 | Experience | CRUD |
 | Personal Info | Single-record edit |
-| Tips | CRUD (write about problems + solutions) |
 | Contact | View received messages + send email reply |
 
 ## Build & Dev Commands

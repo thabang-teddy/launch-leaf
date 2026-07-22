@@ -50,13 +50,11 @@ function Ico({ name, size = 16, color = 'currentColor' }) {
 // ─── Nav definition ───────────────────────────────────────────────────────────
 const NAV = [
     { label: 'Dashboard',    href: 'dashboard.home',            icon: 'home',      match: 'dashboard.home' },
-    { label: 'Projects',     href: 'dashboard.projects.index',  icon: 'code',      match: 'dashboard.projects.*' },
     { label: 'Accounts',     href: 'dashboard.accounts.index',  icon: 'globe',     match: 'dashboard.accounts.*' },
     { label: 'Portfolio',    href: 'dashboard.portfolio.index', icon: 'briefcase', match: 'dashboard.portfolio.*' },
     { label: 'Experience',   href: 'dashboard.experience.index',icon: 'clock',     match: 'dashboard.experience.*' },
     { label: 'Skills',       href: 'dashboard.skills.index',    icon: 'layers',    match: 'dashboard.skills.*' },
     { label: 'Personal Info',href: 'dashboard.personal-info',   icon: 'user',      match: 'dashboard.personal-info*' },
-    { label: 'Tips',         href: 'dashboard.tips.index',      icon: 'bulb',      match: 'dashboard.tips.*' },
     { label: 'Pages',        href: 'dashboard.pages.index',     icon: 'file',      match: 'dashboard.pages.*' },
     { label: 'Notes',        href: 'dashboard.notes.index',     icon: 'edit',      match: 'dashboard.notes.*' },
     { label: 'Kanban',       href: 'dashboard.kanban.index',    icon: 'kanban',    match: 'dashboard.kanban*' },

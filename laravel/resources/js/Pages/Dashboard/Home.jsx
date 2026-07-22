@@ -99,12 +99,9 @@ export default function DashboardHome({ stats = {} }) {
     }, []);
 
     const statCards = [
-        { label: 'GitHub Projects', value: s.projects   ?? 0, href: 'dashboard.projects.index',  accent: '#2DC9A2' },
+        { label: 'Other Accounts',  value: s.accounts   ?? 0, href: 'dashboard.accounts.index',  accent: '#2DC9A2' },
         { label: 'Portfolio Items', value: s.portfolio  ?? 0, href: 'dashboard.portfolio.index', accent: '#6B8AF0' },
         { label: 'Experience',      value: s.experience ?? 0, href: 'dashboard.experience.index',accent: '#F0A05A' },
-        { label: 'Tips',            value: s.tips ?? 0,
-          sub: s.tips_published ?? 0, subLabel: 'published',
-          href: 'dashboard.tips.index', accent: '#F06B8A' },
         { label: 'Notes',           value: s.notes ?? 0, href: 'dashboard.notes.index', accent: '#4BADE8' },
         { label: 'Tasks',           value: s.tasks ?? 0,
           sub: s.tasks_pending ?? 0, subLabel: 'pending',
@@ -118,10 +115,8 @@ export default function DashboardHome({ stats = {} }) {
     ];
 
     const quickActions = [
-        { label: '+ New Project',    href: 'dashboard.projects.create' },
         { label: '+ Portfolio Item', href: 'dashboard.portfolio.create' },
         { label: '+ Experience',     href: 'dashboard.experience.create' },
-        { label: '+ Tip',            href: 'dashboard.tips.create' },
         { label: '+ Note',           href: 'dashboard.notes.create' },
         { label: '+ Task',           href: 'dashboard.tasks.create' },
         { label: '+ Kanban Card',    href: 'dashboard.kanban.cards.create' },
@@ -129,11 +124,9 @@ export default function DashboardHome({ stats = {} }) {
     ];
 
     const sections = [
-        { label: 'GitHub Projects', href: 'dashboard.projects.index', accent: '#2DC9A2' },
         { label: 'Other Accounts',  href: 'dashboard.accounts.index', accent: '#34D399' },
         { label: 'Portfolio',       href: 'dashboard.portfolio.index',accent: '#6B8AF0' },
         { label: 'Experience',      href: 'dashboard.experience.index',accent: '#F0A05A' },
-        { label: 'Tips',            href: 'dashboard.tips.index',      accent: '#F06B8A' },
         { label: 'Pages',           href: 'dashboard.pages.index',     accent: '#4BADE8' },
         { label: 'Notes',           href: 'dashboard.notes.index',     accent: '#A78BFA' },
         { label: 'Tasks',           href: 'dashboard.tasks.index',     accent: '#34D399' },
@@ -164,13 +157,13 @@ export default function DashboardHome({ stats = {} }) {
                     </p>
                 </div>
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                    <Link href={route('dashboard.projects.create')} style={{
+                    <Link href={route('dashboard.portfolio.create')} style={{
                         background: 'rgba(255,255,255,0.2)', color: 'white',
                         padding: '8px 18px', borderRadius: 8, fontSize: 13,
                         fontWeight: 600, textDecoration: 'none',
                         border: '1px solid rgba(255,255,255,0.3)',
                     }}>
-                        + Add Project
+                        + Add Portfolio
                     </Link>
                     <a href="/" target="_blank" rel="noreferrer" style={{
                         background: 'white', color: '#1A9A7E',
