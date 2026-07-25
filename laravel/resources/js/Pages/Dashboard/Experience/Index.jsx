@@ -89,6 +89,7 @@ export default function ExperienceIndex({ items }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => router.post(route('dashboard.experience.sync'), {}, { preserveScroll: true })} title="Re-read the experience markdown files and rebuild the listing">Sync from files</button>
                 <button className="btn btn-primary btn-sm" onClick={openNew}>+ New Entry</button>
             </div>
 

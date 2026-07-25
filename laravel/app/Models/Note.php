@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentUuid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Note extends Model
 {
-    use HasFactory;
+    use HasContentUuid, HasFactory;
 
-    protected $fillable = ['title', 'content'];
+    protected $fillable = ['uuid', 'title', 'content'];
 }

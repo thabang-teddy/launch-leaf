@@ -1,34 +1,34 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\Dashboard\AccountController as DashAccountController;
 // ─── Frontend (public) controllers ───────────────────────────────────────────
-use App\Http\Controllers\Frontend\HomeController;
-use App\Http\Controllers\Frontend\AccountController;
-use App\Http\Controllers\Frontend\PortfolioController;
-use App\Http\Controllers\Frontend\ExperienceController;
-use App\Http\Controllers\Frontend\PersonalInfoController;
-use App\Http\Controllers\Frontend\ContactController;
-use App\Http\Controllers\Frontend\PageController as FrontendPageController;
-
-// ─── Dashboard controllers ────────────────────────────────────────────────────
-use App\Http\Controllers\Dashboard\PageController;
-use App\Http\Controllers\Dashboard\NoteController;
-use App\Http\Controllers\Dashboard\KanbanColumnController;
-use App\Http\Controllers\Dashboard\KanbanCardController;
-use App\Http\Controllers\Dashboard\TaskController;
-use App\Http\Controllers\Dashboard\AccountController       as DashAccountController;
-use App\Http\Controllers\Dashboard\PortfolioController     as DashPortfolioController;
-use App\Http\Controllers\Dashboard\ExperienceController    as DashExperienceController;
-use App\Http\Controllers\Dashboard\PersonalInfoController  as DashPersonalInfoController;
-use App\Http\Controllers\Dashboard\SkillController         as DashSkillController;
-use App\Http\Controllers\Dashboard\ContactController       as DashContactController;
-use App\Http\Controllers\Dashboard\GitHubSyncController;
-use App\Http\Controllers\Dashboard\KanbanBoardController;
-use App\Http\Controllers\Dashboard\KanbanProjectController;
-use App\Http\Controllers\Dashboard\HomeController as DashHomeController;
-use App\Http\Controllers\Dashboard\UserController  as DashUserController;
+use App\Http\Controllers\Dashboard\ContactController as DashContactController;
+use App\Http\Controllers\Dashboard\ContentSyncController;
 use App\Http\Controllers\Dashboard\DownloadController as DashDownloadController;
+use App\Http\Controllers\Dashboard\ExperienceController as DashExperienceController;
+use App\Http\Controllers\Dashboard\GitHubSyncController;
+use App\Http\Controllers\Dashboard\HomeController as DashHomeController;
+use App\Http\Controllers\Dashboard\KanbanBoardController;
+// ─── Dashboard controllers ────────────────────────────────────────────────────
+use App\Http\Controllers\Dashboard\KanbanCardController;
+use App\Http\Controllers\Dashboard\KanbanColumnController;
+use App\Http\Controllers\Dashboard\KanbanProjectController;
+use App\Http\Controllers\Dashboard\NoteController;
+use App\Http\Controllers\Dashboard\PageController;
+use App\Http\Controllers\Dashboard\PersonalInfoController as DashPersonalInfoController;
+use App\Http\Controllers\Dashboard\PortfolioController as DashPortfolioController;
+use App\Http\Controllers\Dashboard\SkillController as DashSkillController;
+use App\Http\Controllers\Dashboard\TaskController;
+use App\Http\Controllers\Dashboard\UserController as DashUserController;
+use App\Http\Controllers\Frontend\AccountController;
+use App\Http\Controllers\Frontend\ContactController;
+use App\Http\Controllers\Frontend\ExperienceController;
+use App\Http\Controllers\Frontend\HomeController;
+use App\Http\Controllers\Frontend\PageController as FrontendPageController;
+use App\Http\Controllers\Frontend\PersonalInfoController;
+use App\Http\Controllers\Frontend\PortfolioController;
+use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Route;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Public frontend routes
@@ -36,18 +36,18 @@ use App\Http\Controllers\Dashboard\DownloadController as DashDownloadController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/accounts',        [AccountController::class, 'index'])->name('accounts.index');
+Route::get('/accounts', [AccountController::class, 'index'])->name('accounts.index');
 Route::get('/accounts/{slug}', [AccountController::class, 'show'])->name('accounts.show');
 
-Route::get('/portfolio',        [PortfolioController::class, 'index'])->name('portfolio.index');
+Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio.index');
 Route::get('/portfolio/{slug}', [PortfolioController::class, 'show'])->name('portfolio.show');
 
-Route::get('/experience',        [ExperienceController::class, 'index'])->name('experience.index');
+Route::get('/experience', [ExperienceController::class, 'index'])->name('experience.index');
 Route::get('/experience/{slug}', [ExperienceController::class, 'show'])->name('experience.show');
 
 Route::get('/about', [PersonalInfoController::class, 'index'])->name('about');
 
-Route::get('/contact',  [ContactController::class, 'index'])->name('contact');
+Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/pages/{slug}', [FrontendPageController::class, 'show'])->name('pages.show');
@@ -70,18 +70,25 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::get('/', [DashHomeController::class, 'index'])->name('home');
 
     // Other Accounts — CRUD + sync
-    Route::resource('accounts',   DashAccountController::class);
+    Route::resource('accounts', DashAccountController::class);
     Route::post('accounts/{account}/sync', [GitHubSyncController::class, 'syncAccount'])
         ->name('accounts.sync');
 
     // Content CRUD
-    Route::resource('portfolio',  DashPortfolioController::class);
+    Route::resource('portfolio', DashPortfolioController::class);
     Route::patch('portfolio/{portfolio}/toggle-active', [DashPortfolioController::class, 'toggleActive'])
         ->name('portfolio.toggle-active');
     Route::resource('experience', DashExperienceController::class);
-    Route::resource('skills',     DashSkillController::class);
-    Route::resource('pages',      PageController::class);
-    Route::resource('notes',      NoteController::class);
+    Route::resource('skills', DashSkillController::class);
+    Route::resource('pages', PageController::class);
+    Route::resource('notes', NoteController::class);
+
+    // Content file sync — rebuild each section's DB listing from its markdown files
+    foreach (['portfolio', 'experience', 'skills', 'notes', 'tasks', 'kanban'] as $contentSection) {
+        Route::post("{$contentSection}/sync", [ContentSyncController::class, 'sync'])
+            ->defaults('section', $contentSection)
+            ->name("{$contentSection}.sync");
+    }
 
     // Kanban — boards list is the entry point
     Route::get('kanban', [KanbanBoardController::class, 'index'])->name('kanban.index');
@@ -91,11 +98,11 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
         ->parameters(['boards' => 'kanbanBoard'])
         ->only(['create', 'store', 'show', 'edit', 'update', 'destroy'])
         ->names([
-            'create'  => 'kanban.boards.create',
-            'store'   => 'kanban.boards.store',
-            'show'    => 'kanban.boards.show',
-            'edit'    => 'kanban.boards.edit',
-            'update'  => 'kanban.boards.update',
+            'create' => 'kanban.boards.create',
+            'store' => 'kanban.boards.store',
+            'show' => 'kanban.boards.show',
+            'edit' => 'kanban.boards.edit',
+            'update' => 'kanban.boards.update',
             'destroy' => 'kanban.boards.destroy',
         ]);
 
@@ -104,29 +111,29 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
         ->parameters(['projects' => 'kanbanProject'])
         ->only(['create', 'store', 'show', 'edit', 'update', 'destroy'])
         ->names([
-            'create'  => 'kanban.projects.create',
-            'store'   => 'kanban.projects.store',
-            'show'    => 'kanban.projects.show',
-            'edit'    => 'kanban.projects.edit',
-            'update'  => 'kanban.projects.update',
+            'create' => 'kanban.projects.create',
+            'store' => 'kanban.projects.store',
+            'show' => 'kanban.projects.show',
+            'edit' => 'kanban.projects.edit',
+            'update' => 'kanban.projects.update',
             'destroy' => 'kanban.projects.destroy',
         ]);
 
     // Batch reorder endpoints (must be defined before the resource wildcards)
     Route::post('kanban/columns/reorder', [KanbanColumnController::class, 'reorder'])->name('kanban.columns.reorder');
-    Route::post('kanban/cards/reorder',   [KanbanCardController::class,  'reorder'])->name('kanban.cards.reorder');
+    Route::post('kanban/cards/reorder', [KanbanCardController::class,  'reorder'])->name('kanban.cards.reorder');
 
     // Kanban columns — scoped to a project via kanban_project_id in the form
     // parameters() aligns route wildcard with controller parameter name for model binding
     Route::resource('kanban/columns', KanbanColumnController::class)
         ->parameters(['columns' => 'kanbanColumn'])
         ->names([
-            'index'   => 'kanban.columns.index',
-            'create'  => 'kanban.columns.create',
-            'store'   => 'kanban.columns.store',
-            'show'    => 'kanban.columns.show',
-            'edit'    => 'kanban.columns.edit',
-            'update'  => 'kanban.columns.update',
+            'index' => 'kanban.columns.index',
+            'create' => 'kanban.columns.create',
+            'store' => 'kanban.columns.store',
+            'show' => 'kanban.columns.show',
+            'edit' => 'kanban.columns.edit',
+            'update' => 'kanban.columns.update',
             'destroy' => 'kanban.columns.destroy',
         ]);
 
@@ -134,12 +141,12 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::resource('kanban/cards', KanbanCardController::class)
         ->parameters(['cards' => 'kanbanCard'])
         ->names([
-            'index'   => 'kanban.cards.index',
-            'create'  => 'kanban.cards.create',
-            'store'   => 'kanban.cards.store',
-            'show'    => 'kanban.cards.show',
-            'edit'    => 'kanban.cards.edit',
-            'update'  => 'kanban.cards.update',
+            'index' => 'kanban.cards.index',
+            'create' => 'kanban.cards.create',
+            'store' => 'kanban.cards.store',
+            'show' => 'kanban.cards.show',
+            'edit' => 'kanban.cards.edit',
+            'update' => 'kanban.cards.update',
             'destroy' => 'kanban.cards.destroy',
         ]);
 
@@ -147,30 +154,30 @@ Route::middleware(['auth', 'verified'])->prefix('dashboard')->name('dashboard.')
     Route::resource('tasks', TaskController::class);
 
     // User account — details + edit
-    Route::get('user',              [DashUserController::class, 'show'])->name('user.show');
-    Route::get('user/edit',         [DashUserController::class, 'edit'])->name('user.edit');
-    Route::patch('user',            [DashUserController::class, 'update'])->name('user.update');
-    Route::put('user/password',     [DashUserController::class, 'updatePassword'])->name('user.password');
+    Route::get('user', [DashUserController::class, 'show'])->name('user.show');
+    Route::get('user/edit', [DashUserController::class, 'edit'])->name('user.edit');
+    Route::patch('user', [DashUserController::class, 'update'])->name('user.update');
+    Route::put('user/password', [DashUserController::class, 'updatePassword'])->name('user.password');
 
     // Personal Info — single-record edit/update (no index/create/show/delete)
-    Route::get('personal-info',         [DashPersonalInfoController::class, 'edit'])->name('personal-info');
-    Route::put('personal-info',         [DashPersonalInfoController::class, 'update'])->name('personal-info.update');
+    Route::get('personal-info', [DashPersonalInfoController::class, 'edit'])->name('personal-info');
+    Route::put('personal-info', [DashPersonalInfoController::class, 'update'])->name('personal-info.update');
 
     // App downloads
     Route::get('downloads', [DashDownloadController::class, 'index'])->name('downloads');
 
     // Contact messages
-    Route::get('contact',               [DashContactController::class, 'index'])->name('contact.index');
-    Route::get('contact/{contact}',     [DashContactController::class, 'show'])->name('contact.show');
+    Route::get('contact', [DashContactController::class, 'index'])->name('contact.index');
+    Route::get('contact/{contact}', [DashContactController::class, 'show'])->name('contact.show');
     Route::post('contact/{contact}/reply', [DashContactController::class, 'reply'])->name('contact.reply');
-    Route::delete('contact/{contact}',  [DashContactController::class, 'destroy'])->name('contact.destroy');
+    Route::delete('contact/{contact}', [DashContactController::class, 'destroy'])->name('contact.destroy');
 });
 
 // Keep Breeze's profile routes and auth routes
 Route::middleware('auth')->group(function () {
-    Route::get('/profile',    [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile',  [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

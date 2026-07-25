@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Portfolio;
+use App\Services\ContentSyncService;
 use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,10 +16,18 @@ class PortfolioController extends Controller
 {
     use ResolvesOrder;
 
+    private const SECTION = 'portfolio';
+
+    public function __construct(private ContentSyncService $sync) {}
+
     public function index(): Response
     {
+        // Long-form `content` lives in the file, not the DB — attach it for editing.
+        $items = Portfolio::orderBy('order')->get();
+        $items->each(fn (Portfolio $item) => $item->content = $this->sync->readItemBody(self::SECTION, $item));
+
         return Inertia::render('Dashboard/Portfolio/Index', [
-            'items' => Portfolio::orderBy('order')->get(),
+            'items' => $items,
         ]);
     }
 
@@ -30,23 +39,28 @@ class PortfolioController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'content'     => 'nullable|string',
-            'image_path'  => 'nullable|string|max:255',
-            'tech_stack'  => 'nullable|string',
-            'live_url'    => 'nullable|url|max:255',
-            'repo_url'    => 'nullable|url|max:255',
-            'order'       => 'nullable|integer|min:1',
-            'is_active'   => 'boolean',
+            'content' => 'nullable|string',
+            'image_path' => 'nullable|string|max:255',
+            'tech_stack' => 'nullable|string',
+            'live_url' => 'nullable|url|max:255',
+            'repo_url' => 'nullable|url|max:255',
+            'order' => 'nullable|integer|min:1',
+            'is_active' => 'boolean',
         ]);
 
-        $validated['slug']       = $this->uniqueSlug($validated['title']);
-        $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
-        $validated['order']      = $this->nextAvailableOrder(Portfolio::class, $validated['order'] ?? 1);
-        $validated['is_active']  ??= true;
+        $body = (string) ($validated['content'] ?? '');
+        unset($validated['content']); // body is stored in the file, not the DB
 
-        Portfolio::create($validated);
+        $validated['slug'] = $this->uniqueSlug($validated['title']);
+        $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
+        $validated['order'] = $this->nextAvailableOrder(Portfolio::class, $validated['order'] ?? 1);
+        $validated['is_active'] ??= true;
+
+        $portfolio = Portfolio::create($validated);
+        $portfolio->content = $body;
+        $this->sync->writeItemModel(self::SECTION, $portfolio);
 
         return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item created.');
     }
@@ -58,7 +72,7 @@ class PortfolioController extends Controller
 
     public function edit(Portfolio $portfolio): Response
     {
-        $item               = $portfolio->toArray();
+        $item = $portfolio->toArray();
         $item['tech_stack'] = implode(', ', $portfolio->tech_stack ?? []);
 
         return Inertia::render('Dashboard/Portfolio/Edit', ['item' => $item]);
@@ -67,18 +81,23 @@ class PortfolioController extends Controller
     public function update(Request $request, Portfolio $portfolio): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'content'     => 'nullable|string',
-            'image_path'  => 'nullable|string|max:255',
-            'tech_stack'  => 'nullable|string',
-            'live_url'    => 'nullable|url|max:255',
-            'repo_url'    => 'nullable|url|max:255',
-            'order'       => 'nullable|integer|min:1',
-            'is_active'   => 'boolean',
+            'content' => 'nullable|string',
+            'image_path' => 'nullable|string|max:255',
+            'tech_stack' => 'nullable|string',
+            'live_url' => 'nullable|url|max:255',
+            'repo_url' => 'nullable|url|max:255',
+            'order' => 'nullable|integer|min:1',
+            'is_active' => 'boolean',
         ]);
 
-        $validated['slug']       = $this->uniqueSlug($validated['title'], $portfolio->id);
+        $previousSlug = $portfolio->slug;
+
+        $body = (string) ($validated['content'] ?? '');
+        unset($validated['content']); // body is stored in the file, not the DB
+
+        $validated['slug'] = $this->uniqueSlug($validated['title'], $portfolio->id);
         $validated['tech_stack'] = $this->parseCsv($validated['tech_stack'] ?? '');
 
         if (isset($validated['order'])) {
@@ -86,6 +105,8 @@ class PortfolioController extends Controller
         }
 
         $portfolio->update($validated);
+        $portfolio->content = $body;
+        $this->sync->writeItemModel(self::SECTION, $portfolio, $previousSlug);
 
         return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item updated.');
     }
@@ -94,6 +115,10 @@ class PortfolioController extends Controller
     {
         $portfolio->update(['is_active' => ! $portfolio->is_active]);
 
+        // Preserve the file body (this endpoint doesn't carry it) then rewrite frontmatter.
+        $portfolio->content = $this->sync->readItemBody(self::SECTION, $portfolio);
+        $this->sync->writeItemModel(self::SECTION, $portfolio);
+
         $state = $portfolio->is_active ? 'activated' : 'deactivated';
 
         return redirect()->route('dashboard.portfolio.index')->with('success', "Portfolio item {$state}.");
@@ -101,6 +126,7 @@ class PortfolioController extends Controller
 
     public function destroy(Portfolio $portfolio): RedirectResponse
     {
+        $this->sync->deleteItemModel(self::SECTION, $portfolio);
         $portfolio->delete();
 
         return redirect()->route('dashboard.portfolio.index')->with('success', 'Portfolio item deleted.');
@@ -110,11 +136,11 @@ class PortfolioController extends Controller
     {
         $base = Str::slug($title);
         $slug = $base;
-        $i    = 1;
+        $i = 1;
 
         while (
             Portfolio::where('slug', $slug)
-                ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+                ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
                 ->exists()
         ) {
             $slug = "$base-$i";

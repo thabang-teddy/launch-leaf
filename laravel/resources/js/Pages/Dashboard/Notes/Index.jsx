@@ -73,6 +73,7 @@ export default function NotesIndex({ notes }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => router.post(route('dashboard.notes.sync'), {}, { preserveScroll: true })} title="Re-read the notes markdown files and rebuild the listing">Sync from files</button>
                 <button className="btn btn-primary btn-sm" onClick={openNew}>+ New Note</button>
             </div>
 

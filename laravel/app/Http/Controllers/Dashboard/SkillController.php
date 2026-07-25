@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Skill;
+use App\Services\ContentSyncService;
 use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,10 @@ use Inertia\Response;
 class SkillController extends Controller
 {
     use ResolvesOrder;
+
+    private const SECTION = 'skills';
+
+    public function __construct(private ContentSyncService $sync) {}
 
     public function index(): Response
     {
@@ -29,15 +34,16 @@ class SkillController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'icon'        => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'order'       => 'nullable|integer|min:1',
+            'order' => 'nullable|integer|min:1',
         ]);
 
         $validated['order'] = $this->nextAvailableOrder(Skill::class, $validated['order'] ?? 1);
 
         Skill::create($validated);
+        $this->sync->rebuildCollection(self::SECTION);
 
         return redirect()->route('dashboard.skills.index')->with('success', 'Skill created.');
     }
@@ -55,10 +61,10 @@ class SkillController extends Controller
     public function update(Request $request, Skill $skill): RedirectResponse
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'icon'        => 'nullable|string|max:255',
+            'name' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
             'description' => 'nullable|string',
-            'order'       => 'nullable|integer|min:1',
+            'order' => 'nullable|integer|min:1',
         ]);
 
         if (isset($validated['order'])) {
@@ -66,6 +72,7 @@ class SkillController extends Controller
         }
 
         $skill->update($validated);
+        $this->sync->rebuildCollection(self::SECTION);
 
         return redirect()->route('dashboard.skills.index')->with('success', 'Skill updated.');
     }
@@ -73,6 +80,7 @@ class SkillController extends Controller
     public function destroy(Skill $skill): RedirectResponse
     {
         $skill->delete();
+        $this->sync->rebuildCollection(self::SECTION);
 
         return redirect()->route('dashboard.skills.index')->with('success', 'Skill deleted.');
     }

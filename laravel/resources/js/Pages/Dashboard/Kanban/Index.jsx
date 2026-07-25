@@ -146,12 +146,21 @@ export default function KanbanIndex({ projects }) {
                         {projects.length} project{projects.length !== 1 ? 's' : ''}
                     </p>
                 </div>
-                <button
-                    onClick={() => setProjectModal({ mode: 'create' })}
-                    style={{ background: C.green, color: '#fff', borderRadius: '8px', padding: '8px 18px', fontWeight: 600, fontSize: '0.875rem', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                    <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>+</span> New Project
-                </button>
+                <div style={{ display: 'inline-flex', gap: '8px' }}>
+                    <button
+                        onClick={() => router.post(route('dashboard.kanban.sync'), {}, { preserveScroll: true })}
+                        title="Re-read the kanban markdown files and rebuild the boards"
+                        style={{ background: 'transparent', color: C.muted, borderRadius: '8px', padding: '8px 18px', fontWeight: 600, fontSize: '0.875rem', border: `1px solid ${C.border ?? '#d0d0d0'}`, cursor: 'pointer' }}
+                    >
+                        Sync from files
+                    </button>
+                    <button
+                        onClick={() => setProjectModal({ mode: 'create' })}
+                        style={{ background: C.green, color: '#fff', borderRadius: '8px', padding: '8px 18px', fontWeight: 600, fontSize: '0.875rem', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                        <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>+</span> New Project
+                    </button>
+                </div>
             </div>
 
             {/* Empty state */}

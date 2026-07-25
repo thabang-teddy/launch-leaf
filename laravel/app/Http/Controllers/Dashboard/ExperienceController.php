@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Experience;
+use App\Services\ContentSyncService;
 use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,10 +16,18 @@ class ExperienceController extends Controller
 {
     use ResolvesOrder;
 
+    private const SECTION = 'experience';
+
+    public function __construct(private ContentSyncService $sync) {}
+
     public function index(): Response
     {
+        // Long-form `description` lives in the file, not the DB — attach it for editing.
+        $items = Experience::orderBy('order')->orderByDesc('start_date')->get();
+        $items->each(fn (Experience $item) => $item->description = $this->sync->readItemBody(self::SECTION, $item));
+
         return Inertia::render('Dashboard/Experience/Index', [
-            'items' => Experience::orderBy('order')->orderByDesc('start_date')->get(),
+            'items' => $items,
         ]);
     }
 
@@ -30,23 +39,28 @@ class ExperienceController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'company'     => 'required|string|max:255',
-            'summary'     => 'nullable|string|max:500',
-            'location'    => 'nullable|string|max:255',
-            'start_date'  => 'required|date',
-            'end_date'    => 'nullable|date|after_or_equal:start_date',
-            'is_current'  => 'boolean',
+            'title' => 'required|string|max:255',
+            'company' => 'required|string|max:255',
+            'summary' => 'nullable|string|max:500',
+            'location' => 'nullable|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_current' => 'boolean',
             'description' => 'nullable|string',
-            'type'        => 'required|in:work,education',
-            'order'       => 'nullable|integer|min:1',
+            'type' => 'required|in:work,education',
+            'order' => 'nullable|integer|min:1',
         ]);
 
-        $validated['slug']       = $this->uniqueSlug($validated['title']);
-        $validated['order']      = $this->nextAvailableOrder(Experience::class, $validated['order'] ?? 1);
+        $body = (string) ($validated['description'] ?? '');
+        unset($validated['description']); // body is stored in the file, not the DB
+
+        $validated['slug'] = $this->uniqueSlug($validated['title']);
+        $validated['order'] = $this->nextAvailableOrder(Experience::class, $validated['order'] ?? 1);
         $validated['is_current'] ??= false;
 
-        Experience::create($validated);
+        $experience = Experience::create($validated);
+        $experience->description = $body;
+        $this->sync->writeItemModel(self::SECTION, $experience);
 
         return redirect()->route('dashboard.experience.index')->with('success', 'Experience created.');
     }
@@ -64,17 +78,22 @@ class ExperienceController extends Controller
     public function update(Request $request, Experience $experience): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
-            'company'     => 'required|string|max:255',
-            'summary'     => 'nullable|string|max:500',
-            'location'    => 'nullable|string|max:255',
-            'start_date'  => 'required|date',
-            'end_date'    => 'nullable|date|after_or_equal:start_date',
-            'is_current'  => 'boolean',
+            'title' => 'required|string|max:255',
+            'company' => 'required|string|max:255',
+            'summary' => 'nullable|string|max:500',
+            'location' => 'nullable|string|max:255',
+            'start_date' => 'required|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'is_current' => 'boolean',
             'description' => 'nullable|string',
-            'type'        => 'required|in:work,education',
-            'order'       => 'nullable|integer|min:1',
+            'type' => 'required|in:work,education',
+            'order' => 'nullable|integer|min:1',
         ]);
+
+        $previousSlug = $experience->slug;
+
+        $body = (string) ($validated['description'] ?? '');
+        unset($validated['description']); // body is stored in the file, not the DB
 
         $validated['slug'] = $this->uniqueSlug($validated['title'], $experience->id);
 
@@ -83,12 +102,15 @@ class ExperienceController extends Controller
         }
 
         $experience->update($validated);
+        $experience->description = $body;
+        $this->sync->writeItemModel(self::SECTION, $experience, $previousSlug);
 
         return redirect()->route('dashboard.experience.index')->with('success', 'Experience updated.');
     }
 
     public function destroy(Experience $experience): RedirectResponse
     {
+        $this->sync->deleteItemModel(self::SECTION, $experience);
         $experience->delete();
 
         return redirect()->route('dashboard.experience.index')->with('success', 'Experience deleted.');
@@ -98,11 +120,11 @@ class ExperienceController extends Controller
     {
         $base = Str::slug($title);
         $slug = $base;
-        $i    = 1;
+        $i = 1;
 
         while (
             Experience::where('slug', $slug)
-                ->when($excludeId, fn($q) => $q->where('id', '!=', $excludeId))
+                ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
                 ->exists()
         ) {
             $slug = "$base-$i";

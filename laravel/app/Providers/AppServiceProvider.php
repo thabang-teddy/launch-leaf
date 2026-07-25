@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\KanbanBoard;
+use App\Models\KanbanCard;
+use App\Models\KanbanColumn;
+use App\Models\KanbanProject;
+use App\Observers\KanbanFileObserver;
+use App\Services\KanbanExportScheduler;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
@@ -14,26 +20,33 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        // One scheduler per request so a multi-row kanban change exports files once.
+        $this->app->singleton(KanbanExportScheduler::class);
     }
 
     public function boot(): void
     {
+        // Keep the kanban markdown files in sync with any board/project/column/card change.
+        foreach ([KanbanBoard::class, KanbanProject::class, KanbanColumn::class, KanbanCard::class] as $model) {
+            $model::observe(KanbanFileObserver::class);
+        }
+
         // Use extension-based MIME detection when the fileinfo PHP extension is unavailable.
         // Also set explicit directory permissions (755) so Apache can serve uploaded files.
         if (! extension_loaded('fileinfo')) {
             Storage::extend('local', function ($app, $config) {
                 $visibility = PortableVisibilityConverter::fromArray([
                     'file' => ['public' => 0644, 'private' => 0600],
-                    'dir'  => ['public' => 0755, 'private' => 0700],
+                    'dir' => ['public' => 0755, 'private' => 0700],
                 ]);
                 $adapter = new LocalFilesystemAdapter(
                     $config['root'],
                     $visibility,
                     LOCK_EX,
                     LocalFilesystemAdapter::DISALLOW_LINKS,
-                    new ExtensionMimeTypeDetector(),
+                    new ExtensionMimeTypeDetector,
                 );
+
                 return new FilesystemAdapter(
                     new Filesystem($adapter, $config),
                     $adapter,

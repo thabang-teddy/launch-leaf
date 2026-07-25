@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Services\ContentSyncService;
 use App\Traits\ResolvesOrder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,10 @@ use Inertia\Response;
 class TaskController extends Controller
 {
     use ResolvesOrder;
+
+    private const SECTION = 'tasks';
+
+    public function __construct(private ContentSyncService $sync) {}
 
     public function index(): Response
     {
@@ -29,15 +34,16 @@ class TaskController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'due_date'    => 'nullable|date',
-            'order'       => 'nullable|integer|min:0',
+            'due_date' => 'nullable|date',
+            'order' => 'nullable|integer|min:0',
         ]);
 
         $validated['order'] = $this->nextAvailableOrder(Task::class, $validated['order'] ?? 1);
 
         Task::create($validated);
+        $this->sync->rebuildCollection(self::SECTION);
 
         return redirect()->route('dashboard.tasks.index')->with('success', 'Task created.');
     }
@@ -55,16 +61,16 @@ class TaskController extends Controller
     public function update(Request $request, Task $task): RedirectResponse
     {
         $validated = $request->validate([
-            'title'        => 'required|string|max:255',
-            'description'  => 'nullable|string',
-            'due_date'     => 'nullable|date',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'due_date' => 'nullable|date',
             'is_completed' => 'boolean',
-            'order'        => 'nullable|integer|min:0',
+            'order' => 'nullable|integer|min:0',
         ]);
 
-        if (!empty($validated['is_completed']) && !$task->is_completed) {
+        if (! empty($validated['is_completed']) && ! $task->is_completed) {
             $validated['completed_at'] = now();
-        } elseif (isset($validated['is_completed']) && !$validated['is_completed']) {
+        } elseif (isset($validated['is_completed']) && ! $validated['is_completed']) {
             $validated['completed_at'] = null;
         }
 
@@ -73,6 +79,7 @@ class TaskController extends Controller
         }
 
         $task->update($validated);
+        $this->sync->rebuildCollection(self::SECTION);
 
         return back()->with('success', 'Task updated.');
     }
@@ -80,6 +87,7 @@ class TaskController extends Controller
     public function destroy(Task $task): RedirectResponse
     {
         $task->delete();
+        $this->sync->rebuildCollection(self::SECTION);
 
         return redirect()->route('dashboard.tasks.index')->with('success', 'Task deleted.');
     }

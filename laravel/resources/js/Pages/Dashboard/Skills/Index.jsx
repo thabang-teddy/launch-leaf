@@ -78,6 +78,7 @@ export default function SkillsIndex({ items }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => router.post(route('dashboard.skills.sync'), {}, { preserveScroll: true })} title="Re-read the skills markdown file and rebuild the listing">Sync from files</button>
                 <button className="btn btn-primary btn-sm" onClick={openNew}>+ New Skill</button>
             </div>
 

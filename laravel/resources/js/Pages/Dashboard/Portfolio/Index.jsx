@@ -64,6 +64,8 @@ export default function PortfolioIndex({ items }) {
         });
     };
 
+    const sync = () => router.post(route('dashboard.portfolio.sync'), {}, { preserveScroll: true });
+
     const askDelete = (id) => setModal({ id });
     const handleConfirm = () => {
         if (selected?.id === modal.id) closePanel();
@@ -98,6 +100,13 @@ export default function PortfolioIndex({ items }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={sync}
+                    title="Re-read the portfolio markdown files and rebuild the listing"
+                >
+                    Sync from files
+                </button>
                 <button className="btn btn-primary btn-sm" onClick={openNew}>+ New Item</button>
             </div>
 

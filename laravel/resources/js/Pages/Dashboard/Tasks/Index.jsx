@@ -91,6 +91,7 @@ export default function TasksIndex({ tasks }) {
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                 />
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => router.post(route('dashboard.tasks.sync'), {}, { preserveScroll: true })} title="Re-read the tasks markdown file and rebuild the listing">Sync from files</button>
                 <button className="btn btn-primary btn-sm" onClick={openNew}>+ New Task</button>
             </div>
 
